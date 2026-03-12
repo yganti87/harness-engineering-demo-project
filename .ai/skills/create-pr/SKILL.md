@@ -1,89 +1,59 @@
 ---
 name: create-pr
-description: Creates well-formatted GitHub PR content from feature or task implementation. Use when the user asks to create a PR, draft a pull request, or prepare PR content for completed work.
+description: Creates well-formatted GitHub PR from feature or task implementation. Drafts commit, commits to feature branch, pushes, and opens PR via gh. Use when the user asks to create a PR, draft a pull request, or prepare PR content for completed work.
 ---
 
 # Create GitHub PR
 
-## Instructions
+## Workflow
 
-When creating PR content from completed implementation:
+Execute this full flow: draft commit → commit → push → open PR.
 
-1. **Analyze changes**: Review the git diff or implementation summary to understand what was done
-2. **Identify scope**: Determine if it's feat, fix, chore, refactor, docs, or test
-3. **Generate title** using Conventional Commits: `type(scope): brief description`
-4. **Generate description** using the template below
+### Step 1: Analyze changes
 
-## PR Title Format
+- Run `git status` and `git diff --stat`
+- Review changes to understand scope and type (feat, fix, chore, refactor, docs, test)
 
-```
-<type>(<scope>): <subject>
+### Step 2: Ensure feature branch
 
-Types: feat | fix | chore | refactor | docs | test
-Scope: optional, e.g. backend, frontend, search, auth
-```
+- If on `main` or `master`: create and switch to `git checkout -b <type>/<scope>-<slug>` (e.g. `feat/search-add-book-search`)
+- If already on a feature branch: stay on it
 
-Examples:
-- `feat(search): add book search by title and author`
-- `fix(api): correct 404 response format`
-- `chore(deps): upgrade Spring Boot to 3.2.2`
+### Step 3: Draft and create commit
 
-## PR Description Template
+- Stage relevant files: `git add <paths>` (exclude unrelated files like `.env`, IDE config)
+- Generate commit message: `type(scope): brief description` (Conventional Commits)
+- Run `git commit -m "<message>"`
 
+### Step 4: Push
+
+- Run `git push -u origin <branch>`
+
+### Step 5: Open PR
+
+- Run `gh pr create --title "<commit title>" --body "<description>"` (see body template below)
+
+## Formats
+
+**Commit/PR title:** `type(scope): subject` — types: feat, fix, chore, refactor, docs, test
+
+**PR body template:**
 ```markdown
 ## Summary
-[1-2 sentence overview of what this PR does]
+[1-2 sentence overview]
 
 ## Changes
-- [List key changes, one per line]
-- [Reference specific components if relevant]
+- [Key changes, one per line]
 
 ## Testing
 - [ ] Unit tests added/updated
 - [ ] Integration tests pass
-- [ ] Manual verification steps if applicable
+- [ ] Manual verification if applicable
 
 ## Notes
-[Optional: migration steps, breaking changes, follow-up work]
+[Optional]
 ```
 
-## Output
+## Shell note
 
-Provide:
-1. **Title** — copy-paste ready
-2. **Body** — filled template, copy-paste ready
-3. **Optional**: `gh pr create` command with `--title` and `--body` (escape newlines for shell)
-
-## Example
-
-Input: User completed book search feature implementation.
-
-Output:
-
-**Title:** `feat(search): add book search by title and author`
-
-**Body:**
-```markdown
-## Summary
-Adds search endpoint and frontend UI to search books by title and author.
-
-## Changes
-- `BookController`: GET /api/books/search with query params
-- `BookService`: search by title/author using repository
-- `BookRepository`: findByTitleContainingIgnoreCase, findByAuthorContainingIgnoreCase
-- Streamlit: search form and results display
-
-## Testing
-- [x] Unit tests for BookService.searchBooks
-- [x] Integration test for search endpoint
-- [x] Manual check via frontend
-
-## Notes
-None.
-```
-
-**Create via CLI:**
-```bash
-gh pr create --title "feat(search): add book search by title and author" --body "## Summary
-Adds search endpoint..."
-```
+For `gh pr create --body`, pass body as a single string. Use `\n` for newlines or a here-doc. Avoid unescaped quotes in the body.
