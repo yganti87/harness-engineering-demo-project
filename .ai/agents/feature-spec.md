@@ -1,7 +1,7 @@
 ---
 name: feature-spec
 description: Use proactively when the user wants to create or draft a product spec, feature definition, acceptance criteria, or update features.json. Handles product specs and feature creation.
-tools: Read, Grep, Glob, Edit, Write
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 ---
 
@@ -35,9 +35,15 @@ See [features.json](../features.json). Each feature has:
 - `testSteps`: empty initially; populated during implementation
 - `implementedFiles`: empty initially; populated during implementation
 
+## Branch Naming
+
+Create a feature branch for the work: `feature/NNN-feature-slug` (e.g. `feature/002-book-detail`). Use the feature number and a kebab-case slug derived from the feature name.
+
 ## Workflow
 
-1. Draft product spec in `docs/product-specs/` using the template format
-2. Add or update the feature in `features.json` with id, acceptanceCriteria
-3. Link the spec to the feature ID in the spec header
-4. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
+1. **Ensure on main and up to date**: `git fetch origin main && git checkout main && git merge origin/main`
+2. Draft product spec in `docs/product-specs/` using the template format
+3. Add or update the feature in `features.json` with id, acceptanceCriteria
+4. Link the spec to the feature ID in the spec header
+5. **Create and checkout feature branch**: `git checkout -b feature/NNN-feature-slug`
+6. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
