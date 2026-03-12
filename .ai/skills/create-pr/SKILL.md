@@ -31,6 +31,7 @@ Execute this full flow: draft commit → commit → push → open PR.
 
 ### Step 5: Open PR
 
+- Load GH_TOKEN from project `.env` if present (needed for non-interactive use): `[ -f .env ] && set -a && . ./.env && set +a`
 - Run `gh pr create --title "<commit title>" --body "<description>"` (see body template below)
 
 ## Formats

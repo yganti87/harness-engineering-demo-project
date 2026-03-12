@@ -48,6 +48,8 @@ The following slash commands are available:
 
 ## Environment Setup
 
+Add `GH_TOKEN=ghp_xxx` to `.env` if AI agents should run `gh pr create` (automation needs it; interactive `gh auth login` does not). See `.env.example`.
+
 ```bash
 # Check Docker is running
 docker info
