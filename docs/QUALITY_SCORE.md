@@ -16,7 +16,7 @@
 
 | Module | Grade | Notes |
 |--------|-------|-------|
-| `types/dto` | B | DTOs defined. No tests needed (data classes). |
+| `types/dto` | A | DTOs with full unit test coverage (ApiResponse, PagedResponse, BookSearchRequest validation). |
 | `types/enums` | A | Simple enum. Complete. |
 | `config` | B | CORS + OpenAPI configured. No HTTPS yet. |
 | `repository` | B | Spring Data JPA. Covered by integration tests. |

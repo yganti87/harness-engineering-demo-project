@@ -13,7 +13,7 @@
 
 | ID | Task | Completed |
 |----|------|-----------|
-| — | — | — |
+| T001 | [Bring types/dto quality score to A](task-specs/T001-types-dto-quality-a.md) | 2026-03-12 |
 
 ---
 
