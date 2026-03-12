@@ -1,0 +1,12 @@
+---
+description: Create GitHub PRs from feature or task implementation. When user asks to create a PR, draft a pull request, or prepare PR content — read and follow .ai/skills/create-pr/SKILL.md
+alwaysApply: false
+---
+
+# Create PR Skill
+
+When the user asks to create a GitHub PR, draft a pull request, or prepare PR content for completed work:
+
+1. Read [.ai/skills/create-pr/SKILL.md](.ai/skills/create-pr/SKILL.md)
+2. Follow its instructions for title format, description template, and output
+3. Produce copy-paste ready PR title and body, and optionally `gh pr create` command

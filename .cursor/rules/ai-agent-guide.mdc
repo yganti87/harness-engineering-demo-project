@@ -11,3 +11,5 @@ alwaysApply: true
 2. [.ai/README.md](.ai/README.md) — Agent skills, workflows, slash commands (single source of truth)
 
 Slash commands: `/run-tests`, `/logs`, `/build`, `/migrate`, `/db-shell` (see `.ai/commands/` for details).
+
+**Skills** (see [.ai/skills/](.ai/skills/) for details): create-pr — use when asked to create a GitHub PR.
