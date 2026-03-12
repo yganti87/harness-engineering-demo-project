@@ -7,7 +7,15 @@ Works with any AI coding agent (Claude, Cursor, etc.). This folder is the single
 
 ## Agent Skills (Slash Commands)
 
-The following slash commands are available (see `commands/` for implementation details):
+### Project Skills (.ai/skills/)
+
+| Skill | Use when |
+|-------|----------|
+| [create-pr](skills/create-pr/SKILL.md) | User asks to create a GitHub PR, draft a pull request, or prepare PR content for completed implementation |
+
+### Slash Commands (commands/)
+
+The following slash commands are available:
 
 | Command | Description |
 |---------|-------------|

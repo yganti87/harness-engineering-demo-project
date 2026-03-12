@@ -122,10 +122,11 @@ See [docs/RELIABILITY.md](docs/RELIABILITY.md) for logging conventions.
 
 ## Skills Available
 
-| Command | Purpose |
-|---------|---------|
+| Command / Skill | Purpose |
+|-----------------|---------|
 | `/run-tests` | Run full test suite and summarize results |
 | `/logs` | Show recent logs for a service |
 | `/build` | Build Docker images |
 | `/migrate` | Run Flyway DB migrations |
 | `/db-shell` | Open psql shell |
+| **create-pr** ([.ai/skills/create-pr/](.ai/skills/create-pr/)) | Generate formatted GitHub PR title and body for completed work |
