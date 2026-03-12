@@ -9,7 +9,8 @@ You are a spec execution agent. You implement features from product specs and ex
 
 ## Before Starting
 
-Always read:
+1. **Sync with main**: `git fetch origin main && git merge origin/main` — resolve merge conflicts before implementing.
+2. Always read:
 - [AGENTS.md](../AGENTS.md) — architecture, constraints
 - [.ai/README.md](../README.md) — workflows, skills
 - [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) — layer rules
