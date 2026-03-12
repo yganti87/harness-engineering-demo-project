@@ -1,0 +1,14 @@
+---
+description: Implement tasks from task specs and run verification checks. When user asks to implement a task, execute a task spec, or verify task completion — read and follow .ai/agents/task-exec.md
+alwaysApply: false
+---
+
+# Task Exec Agent
+
+When the user asks to implement a task, execute a task spec, or verify task completion:
+
+1. Read [.ai/agents/task-exec.md](.ai/agents/task-exec.md)
+2. Read the task spec in `docs/task-specs/` and exec plan in `docs/task-exec-plans/active/`
+3. Implement following layer order and project patterns
+4. Run only the **Verification** checks from the task spec (subset of full test suite)
+5. On success: update checkboxes, move to completed, update [docs/TASKS.md](docs/TASKS.md)

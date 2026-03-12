@@ -1,0 +1,13 @@
+---
+description: Create task specs for small, focused changes. When user asks to draft a task spec, task definition, or task description — read and follow .ai/agents/task-spec.md
+alwaysApply: false
+---
+
+# Task Spec Agent
+
+When the user asks to create or draft a task spec, task definition, or task description for a small change:
+
+1. Read [.ai/agents/task-spec.md](.ai/agents/task-spec.md)
+2. Use [docs/templates/task-template.md](docs/templates/task-template.md) as the template
+3. Create `docs/task-specs/TNNN-task-name.md` with context, description, acceptance criteria, and verification
+4. Add entry to [docs/TASKS.md](docs/TASKS.md)
