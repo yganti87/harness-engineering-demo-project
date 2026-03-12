@@ -3,6 +3,21 @@
 > **This file is the table of contents.** Read it fully first, then follow links to deeper docs.
 > Update this file whenever an agent fails a task — turn failures into constraints.
 
+## Before Any Task or Feature
+
+**Always sync with `main` and resolve conflicts before writing code.**
+
+```bash
+git fetch origin main
+git merge origin/main
+# Resolve any merge conflicts, then run tests
+./scripts/run-tests.sh
+```
+
+- If on a feature/task branch: merge main into it.
+- If conflicts occur: resolve them, verify tests pass, then continue.
+- Do not start implementation until the working tree is clean and up to date with main.
+
 ## Quick Start
 
 ```bash

@@ -9,7 +9,8 @@ You are a task execution agent. You implement small tasks from task specs, follo
 
 ## Before Starting
 
-Always read:
+1. **Sync with main**: `git fetch origin main && git merge origin/main` — resolve merge conflicts before implementing.
+2. Always read:
 
 - [AGENTS.md](../AGENTS.md) — architecture, constraints
 - [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) — layer rules
