@@ -1,0 +1,82 @@
+# Library App — AI Agent Guide
+
+> This file extends [AGENTS.md](../AGENTS.md) with coding-assistant instructions.
+> **Always read AGENTS.md first.**
+
+Works with any AI coding agent (Claude, Cursor, etc.). This folder is the single source of truth for agent config. Cursor and Claude reference it via `.cursor/rules/` and `.claude` symlink.
+
+## Agent Skills (Slash Commands)
+
+The following slash commands are available (see `commands/` for implementation details):
+
+| Command | Description |
+|---------|-------------|
+| `/run-tests` | Run full test suite (checkstyle + unit + integration + arch) |
+| `/logs [service] [lines]` | Show recent logs (backend/frontend/db) |
+| `/build` | Build all Docker images |
+| `/migrate` | Apply pending Flyway migrations |
+| `/db-shell` | Open interactive psql session |
+
+## Workflow for Implementing a Feature
+
+1. Read `features.json` to understand the current feature's acceptance criteria
+2. Read `docs/ARCHITECTURE.md` — understand the layer constraints before writing any code
+3. Read `docs/PATTERNS.md` — follow existing patterns exactly
+4. Read `docs/COMMON_PITFALLS.md` — avoid known failure modes
+5. Implement in layer order: types → config → repository → service → controller
+6. Write unit tests alongside implementation
+7. Write integration tests in `src/test/.../integration/`
+8. Run `/run-tests` to verify
+9. Check `/logs` if any tests fail for diagnostic context
+10. Update `features.json` status when feature is complete
+
+## Debugging Failed Tests
+
+1. Run `/run-tests` and capture the failure message
+2. For Checkstyle: fix the violation per `docs/CODING_STYLE.md`
+3. For ArchUnit: the error message contains the offending class and fix instructions
+4. For integration test failures: run `/logs backend 100` to see application logs
+5. For Testcontainers failures: verify Docker is running
+
+## Environment Setup
+
+```bash
+# Check Docker is running
+docker info
+
+# Check .env exists (required for docker-compose)
+ls -la .env || cp .env.example .env
+
+# Start services
+./scripts/start.sh
+
+# Verify health
+curl http://localhost:8080/actuator/health
+```
+
+## File Editing Rules
+
+- **Never edit**: existing Flyway migrations (`V1__*.sql`, `V2__*.sql`, etc.)
+- **Always add**: new migrations as `V{n+1}__description.sql`
+- **Never add**: direct SQL in service or controller classes
+- **Always update**: `features.json` when feature status changes
+- **Update AGENTS.md**: when you discover a new constraint or fix a recurring agent failure
+
+## Common Commands Reference
+
+```bash
+# Local backend development (without Docker)
+cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+# Run specific test class
+cd backend && mvn test -Dtest=BookServiceTest
+
+# Tail backend logs live
+docker compose logs backend --follow
+
+# Check DB schema
+docker compose exec db psql -U library_user -d library_db -c "\dt"
+
+# Rebuild only backend image (after code changes)
+docker compose build backend && docker compose up -d backend
+```

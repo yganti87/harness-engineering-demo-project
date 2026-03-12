@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "all-services",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["scripts/start.sh"],
+      "port": 8080
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "--build", "backend"],
+      "port": 8080
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "--build", "frontend"],
+      "port": 8501
+    },
+    {
+      "name": "database",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "db"],
+      "port": 5433
+    }
+  ]
+}

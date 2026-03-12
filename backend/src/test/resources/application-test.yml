@@ -1,0 +1,18 @@
+# Test profile configuration
+# Testcontainers overrides spring.datasource via @DynamicPropertySource
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+
+logging:
+  file:
+    name: /tmp/library-test.log
+  level:
+    root: WARN
+    com.library: DEBUG
+    org.flywaydb: INFO

@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-03-12",
+  "features": [
+    {
+      "id": "F001",
+      "name": "Anonymous Book Search",
+      "status": "completed",
+      "priority": "high",
+      "description": "Users can search the library catalog by title, author, ISBN, or genre without requiring authentication.",
+      "acceptanceCriteria": [
+        "GET /api/v1/books/search returns paginated list of books",
+        "Searching by keyword (q param) matches title, author, or ISBN (case-insensitive)",
+        "Filtering by genre returns only books of that genre",
+        "Empty search returns all books sorted by title",
+        "Response is wrapped in standard ApiResponse envelope",
+        "Pagination works correctly (page, size, totalPages, totalElements)",
+        "Streamlit UI shows search bar + genre dropdown + paginated results grid",
+        "Each book card shows title, author, genre, year, description preview"
+      ],
+      "testSteps": [
+        "Unit: BookServiceTest.searchBooks_withKeyword_returnsMatchingBooks",
+        "Unit: BookServiceTest.searchBooks_withGenre_returnsFilteredBooks",
+        "Unit: BookServiceTest.searchBooks_empty_returnsAllBooks",
+        "Integration: BookSearchIntegrationTest.search_withKeyword_returns200WithResults",
+        "Integration: BookSearchIntegrationTest.search_withGenre_returnsFilteredResults",
+        "Integration: BookSearchIntegrationTest.search_emptyQuery_returnsAllBooksPaginated",
+        "Architecture: LayerDependencyTest.controller_shouldNotDependOnRepository"
+      ],
+      "implementedFiles": [
+        "backend/src/main/java/com/library/types/enums/Genre.java",
+        "backend/src/main/java/com/library/types/dto/ApiResponse.java",
+        "backend/src/main/java/com/library/types/dto/BookDto.java",
+        "backend/src/main/java/com/library/types/dto/BookSearchRequest.java",
+        "backend/src/main/java/com/library/types/dto/PagedResponse.java",
+        "backend/src/main/java/com/library/config/WebConfig.java",
+        "backend/src/main/java/com/library/config/OpenApiConfig.java",
+        "backend/src/main/java/com/library/repository/entity/BookEntity.java",
+        "backend/src/main/java/com/library/repository/BookRepository.java",
+        "backend/src/main/java/com/library/service/BookService.java",
+        "backend/src/main/java/com/library/service/BookServiceImpl.java",
+        "backend/src/main/java/com/library/controller/BookController.java",
+        "backend/src/main/java/com/library/controller/advice/GlobalExceptionHandler.java",
+        "backend/src/main/resources/db/migration/V1__create_library_schema.sql",
+        "backend/src/test/java/com/library/unit/service/BookServiceTest.java",
+        "backend/src/test/java/com/library/integration/BookSearchIntegrationTest.java",
+        "backend/src/test/java/com/library/architecture/LayerDependencyTest.java",
+        "frontend/app.py"
+      ]
+    },
+    {
+      "id": "F002",
+      "name": "Book Detail View",
+      "status": "planned",
+      "priority": "medium",
+      "description": "Users can view full details of a specific book including description, ISBN, and metadata.",
+      "acceptanceCriteria": [
+        "GET /api/v1/books/{id} returns full book details",
+        "Returns 404 with error envelope if book not found",
+        "Streamlit UI shows book detail panel when a book card is clicked"
+      ],
+      "testSteps": [],
+      "implementedFiles": []
+    },
+    {
+      "id": "F003",
+      "name": "User Authentication",
+      "status": "planned",
+      "priority": "medium",
+      "description": "Users can create accounts and log in to access personalized features.",
+      "acceptanceCriteria": [],
+      "testSteps": [],
+      "implementedFiles": []
+    }
+  ]
+}
