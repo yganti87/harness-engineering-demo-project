@@ -20,6 +20,8 @@ The following slash commands are available:
 | Command | Description |
 |---------|-------------|
 | `/run-tests` | Run full test suite (checkstyle + unit + integration + arch) |
+| **task-spec** | Create task spec from description (use task-spec agent) |
+| **task-exec** | Implement task and run verification checks (use task-exec agent) |
 | `/logs [service] [lines]` | Show recent logs (backend/frontend/db) |
 | `/build` | Build all Docker images |
 | `/migrate` | Apply pending Flyway migrations |
@@ -37,6 +39,16 @@ The following slash commands are available:
 8. Run `/run-tests` to verify
 9. Check `/logs` if any tests fail for diagnostic context
 10. Update `features.json` status when feature is complete
+
+## Workflow for Tasks (Small Changes)
+
+Tasks are small, focused changes — no design docs, no features.json.
+
+1. **Draft task spec**: Use `task-spec` agent or [docs/templates/task-template.md](../docs/templates/task-template.md)
+2. **Create spec**: Save to `docs/task-specs/TNNN-task-name.md`
+3. **Implement**: Use `task-exec` agent or implement manually from the spec
+4. **Verify**: Run the checks listed in the task spec's Verification section (subset of full suite)
+5. **Done**: Move exec plan to `docs/task-exec-plans/completed/`, update [docs/TASKS.md](../docs/TASKS.md)
 
 ## Debugging Failed Tests
 

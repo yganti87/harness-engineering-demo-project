@@ -105,6 +105,9 @@ See [docs/RELIABILITY.md](docs/RELIABILITY.md) for logging conventions.
 
 | File | Contents |
 |------|---------|
+| [docs/PLANS.md](docs/PLANS.md) | Feature and task plan index |
+| [docs/TASKS.md](docs/TASKS.md) | Task index and workflow (small changes) |
+| [docs/templates/task-template.md](docs/templates/task-template.md) | Template for writing task descriptions |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layer rules, enforcement, dependency diagram |
 | [docs/CODING_STYLE.md](docs/CODING_STYLE.md) | Java + Python style guide |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | Repository/service/DTO/error patterns with examples |
@@ -130,3 +133,5 @@ See [docs/RELIABILITY.md](docs/RELIABILITY.md) for logging conventions.
 | `/migrate` | Run Flyway DB migrations |
 | `/db-shell` | Open psql shell |
 | **create-pr** ([.ai/skills/create-pr/](.ai/skills/create-pr/)) | Generate formatted GitHub PR title and body for completed work |
+| **task-spec** ([.ai/agents/task-spec.md](.ai/agents/task-spec.md)) | Draft task spec from description (small changes, no features.json) |
+| **task-exec** ([.ai/agents/task-exec.md](.ai/agents/task-exec.md)) | Implement task and run verification checks |
