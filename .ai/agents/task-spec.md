@@ -1,7 +1,7 @@
 ---
 name: task-spec
 description: Use proactively when the user wants to create or draft a task spec, task definition, or task description. Handles small, focused task specs (no design docs, no features.json).
-tools: Read, Grep, Glob, Edit, Write
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 ---
 
@@ -52,13 +52,19 @@ Do not guess or assume. If critical details are missing, ask before drafting.
 2. **Wait for explicit approval** (e.g., "implement this", "go ahead", "approved", "looks good, execute") before any implementation
 3. Do not invoke task-exec or start coding without user confirmation
 
+## Branch Naming
+
+Create a task branch for the work: `task/TNNN-task-slug` (e.g. `task/T001-add-isbn-validation`). Use the task ID and a kebab-case slug derived from the task name.
+
 ## Workflow
 
 1. Read the user's task description — if unclear, **ask for clarification** first
-2. Draft task spec in `docs/task-specs/` using the template format
-3. Propose a task exec plan structure (steps, verification) for `docs/task-exec-plans/active/`
-4. Add entry to [docs/TASKS.md](../docs/TASKS.md) in Active Tasks
-5. **Present the plan to the user and wait for explicit approval** before implementation
+2. **Ensure on main and up to date**: `git fetch origin main && git checkout main && git merge origin/main`
+3. Draft task spec in `docs/task-specs/` using the template format
+4. **Create and checkout task branch**: `git checkout -b task/TNNN-task-slug`
+5. Propose a task exec plan structure (steps, verification) for `docs/task-exec-plans/active/`
+6. Add entry to [docs/TASKS.md](../docs/TASKS.md) in Active Tasks
+7. **Present the plan to the user and wait for explicit approval** before implementation
 
 ## Do NOT
 

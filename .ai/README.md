@@ -27,6 +27,10 @@ The following slash commands are available:
 | `/migrate` | Apply pending Flyway migrations |
 | `/db-shell` | Open interactive psql session |
 
+## Before Any Task or Feature
+
+0. **Sync with main**: `git fetch origin main && git merge origin/main` — resolve merge conflicts before proceeding. Do not start implementation until the branch is up to date.
+
 ## Workflow for Implementing a Feature
 
 1. Read `features.json` to understand the current feature's acceptance criteria
@@ -44,6 +48,7 @@ The following slash commands are available:
 
 Tasks are small, focused changes — no design docs, no features.json.
 
+0. **Sync with main first** (see above). Then:
 1. **Draft task spec**: Use `task-spec` agent or [docs/templates/task-template.md](../docs/templates/task-template.md)
 2. **Create spec**: Save to `docs/task-specs/TNNN-task-name.md`
 3. **Implement**: Use `task-exec` agent or implement manually from the spec
