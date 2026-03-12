@@ -35,18 +35,36 @@ Naming: `docs/task-specs/TNNN-task-name.md` (e.g. T001-add-isbn-validation.md).
 | Spec location | task-specs | product-specs |
 | Exec plan | task-exec-plans | exec-plans |
 
+## Gathering Requirements
+
+**Prompt for more information** when the request is vague or incomplete. Ask the user to clarify:
+- Scope (backend, frontend, both, infra, docs)
+- Acceptance criteria or edge cases
+- Verification expectations (which tests/checks)
+- Out-of-scope boundaries
+
+Do not guess or assume. If critical details are missing, ask before drafting.
+
+## Execution Approval
+
+**Do NOT proceed to implementation.** This agent creates specs and plans only. After delivering the task spec and exec plan:
+1. Present the plan to the user
+2. **Wait for explicit approval** (e.g., "implement this", "go ahead", "approved", "looks good, execute") before any implementation
+3. Do not invoke task-exec or start coding without user confirmation
+
 ## Branch Naming
 
 Create a task branch for the work: `task/TNNN-task-slug` (e.g. `task/T001-add-isbn-validation`). Use the task ID and a kebab-case slug derived from the task name.
 
 ## Workflow
 
-1. Read the user's task description
+1. Read the user's task description — if unclear, **ask for clarification** first
 2. **Ensure on main and up to date**: `git fetch origin main && git checkout main && git merge origin/main`
 3. Draft task spec in `docs/task-specs/` using the template format
 4. **Create and checkout task branch**: `git checkout -b task/TNNN-task-slug`
 5. Propose a task exec plan structure (steps, verification) for `docs/task-exec-plans/active/`
 6. Add entry to [docs/TASKS.md](../docs/TASKS.md) in Active Tasks
+7. **Present the plan to the user and wait for explicit approval** before implementation
 
 ## Do NOT
 

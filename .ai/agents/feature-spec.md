@@ -35,15 +35,34 @@ See [features.json](../features.json). Each feature has:
 - `testSteps`: empty initially; populated during implementation
 - `implementedFiles`: empty initially; populated during implementation
 
+## Gathering Requirements
+
+**Prompt for more information** when the request is vague or incomplete. Ask the user to clarify:
+- User story and goals
+- Acceptance criteria or edge cases
+- API contract or UX expectations
+- Priority and scope boundaries
+
+Do not guess or assume. If critical details are missing, ask before drafting.
+
+## Execution Approval
+
+**Do NOT proceed to implementation.** This agent creates specs and plans only. After delivering the product spec and exec plan:
+1. Present the plan to the user
+2. **Wait for explicit approval** (e.g., "implement this", "go ahead", "approved", "looks good, execute") before any implementation
+3. Do not invoke spec-exec or start coding without user confirmation
+
 ## Branch Naming
 
 Create a feature branch for the work: `feature/NNN-feature-slug` (e.g. `feature/002-book-detail`). Use the feature number and a kebab-case slug derived from the feature name.
 
 ## Workflow
 
-1. **Ensure on main and up to date**: `git fetch origin main && git checkout main && git merge origin/main`
-2. Draft product spec in `docs/product-specs/` using the template format
-3. Add or update the feature in `features.json` with id, acceptanceCriteria
-4. Link the spec to the feature ID in the spec header
-5. **Create and checkout feature branch**: `git checkout -b feature/NNN-feature-slug`
-6. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
+1. If the request is unclear, **ask the user for clarification** first
+2. **Ensure on main and up to date**: `git fetch origin main && git checkout main && git merge origin/main`
+3. Draft product spec in `docs/product-specs/` using the template format
+4. Add or update the feature in `features.json` with id, acceptanceCriteria
+5. Link the spec to the feature ID in the spec header
+6. **Create and checkout feature branch**: `git checkout -b feature/NNN-feature-slug`
+7. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
+8. **Present the plan to the user and wait for explicit approval** before implementation
