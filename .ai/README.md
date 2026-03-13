@@ -12,6 +12,8 @@ Works with any AI coding agent (Claude, Cursor, etc.). This folder is the single
 | Skill | Use when |
 |-------|----------|
 | [create-pr](skills/create-pr/SKILL.md) | User asks to create a GitHub PR, draft a pull request, or prepare PR content for completed implementation |
+| [unit-test-runner](skills/unit-test-runner/SKILL.md) | Running unit tests for plan execution; analyzing Maven Surefire output to determine success/failure |
+| [integration-test-runner](skills/integration-test-runner/SKILL.md) | Running integration tests for plan execution; analyzing Maven Failsafe output (do not trust exit code alone) |
 
 ### Slash Commands (commands/)
 

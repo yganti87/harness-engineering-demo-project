@@ -1,0 +1,13 @@
+---
+description: Run and analyze Maven unit test output. When running unit tests for plan execution or debugging — read and follow .ai/skills/unit-test-runner/SKILL.md.
+alwaysApply: false
+---
+
+# Unit Test Runner
+
+When running unit tests:
+
+1. Read [.ai/skills/unit-test-runner/SKILL.md](.ai/skills/unit-test-runner/SKILL.md)
+2. Capture raw output to `docs/exec-plans/raw-test-output/{plan-id}-unit-raw.txt`
+3. Run `./.ai/scripts/analyze-maven-test-output.sh <raw-file>` to determine success/failure
+4. Consider both exit code and analysis result when reporting pass/fail
