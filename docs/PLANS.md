@@ -11,6 +11,7 @@ None currently.
 | Plan | Feature | Status |
 |------|---------|--------|
 | [001-library-search.md](exec-plans/completed/001-library-search.md) | F001 Anonymous Book Search | completed |
+| [003-user-authentication.md](exec-plans/completed/003-user-authentication.md) | F003 User Authentication | completed |
 
 ## Tasks (Task Exec Plans)
 
