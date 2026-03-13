@@ -141,6 +141,100 @@ curl "http://localhost:8080/api/v1/books/550e8400-e29b-41d4-a716-446655440000"
 
 ---
 
+## Auth
+
+### Register
+
+`POST /api/v1/auth/register`
+
+Create a new user account.
+
+**Request Body**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | string | Yes | 3–50 chars, alphanumeric + underscore |
+| `password` | string | Yes | Min 8 characters |
+| `confirmPassword` | string | Yes | Must match password |
+
+**Example Request**
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret123","confirmPassword":"secret123"}'
+```
+
+**Success Response** (201)
+```json
+{
+  "status": 201,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "alice"
+  },
+  "error": null,
+  "timestamp": "2026-03-12T10:00:00Z"
+}
+```
+
+**Username Already Taken** (409)
+```json
+{
+  "status": 409,
+  "data": null,
+  "error": "Username already taken: alice",
+  "timestamp": "2026-03-12T10:00:00Z"
+}
+```
+
+---
+
+### Login
+
+`POST /api/v1/auth/login`
+
+Authenticate and receive a JWT token. Send token in `Authorization: Bearer <token>` header for future authenticated requests.
+
+**Request Body**
+
+| Field | Type | Required |
+|-------|------|----------|
+| `username` | string | Yes |
+| `password` | string | Yes |
+
+**Example Request**
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret123"}'
+```
+
+**Success Response** (200)
+```json
+{
+  "status": 200,
+  "data": {
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "alice",
+    "token": "eyJhbGciOiJIUzI1NiJ9..."
+  },
+  "error": null,
+  "timestamp": "2026-03-12T10:00:00Z"
+}
+```
+
+**Invalid Credentials** (401)
+```json
+{
+  "status": 401,
+  "data": null,
+  "error": "Invalid username or password",
+  "timestamp": "2026-03-12T10:00:00Z"
+}
+```
+
+---
+
 ## System Endpoints
 
 ### Health Check

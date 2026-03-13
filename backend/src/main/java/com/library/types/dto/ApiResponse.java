@@ -46,6 +46,21 @@ public class ApiResponse<T> {
     }
 
     /**
+     * Creates a successful 201 Created response.
+     *
+     * @param data the response payload
+     * @param <T>  type of the payload
+     * @return a 201 ApiResponse
+     */
+    public static <T> ApiResponse<T> created(T data) {
+        return ApiResponse.<T>builder()
+            .status(201)
+            .data(data)
+            .timestamp(Instant.now())
+            .build();
+    }
+
+    /**
      * Creates an error response with the given HTTP status code and message.
      *
      * @param statusCode HTTP status code (e.g., 404, 400, 500)
