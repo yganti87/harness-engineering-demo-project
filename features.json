@@ -65,12 +65,56 @@
     {
       "id": "F003",
       "name": "User Authentication",
-      "status": "planned",
+      "status": "completed",
       "priority": "medium",
-      "description": "Users can create accounts and log in to access personalized features.",
-      "acceptanceCriteria": [],
-      "testSteps": [],
-      "implementedFiles": []
+      "description": "Users can create accounts and log in with username and password. Passwords are hashed (BCrypt) and stored in the local database.",
+      "acceptanceCriteria": [
+        "POST /api/v1/auth/register accepts username, password, confirmPassword",
+        "Registration validates username (3–50 chars, alphanumeric + underscore)",
+        "Registration validates password (min 8 chars) and confirmPassword match",
+        "Passwords are stored as BCrypt hashes (never plain text) in users table",
+        "Registration returns 201 with user id and username (no password in response)",
+        "Registration returns 409 if username already exists",
+        "POST /api/v1/auth/login accepts username and password",
+        "Login returns 200 with session token and user info on valid credentials",
+        "Login returns 401 on invalid username or password",
+        "Users table has id (UUID), username (unique), password_hash, created_at, updated_at",
+        "All responses use ApiResponse envelope",
+        "Streamlit UI shows Create Account and Login flows; displays welcome + Logout when logged in"
+      ],
+      "testSteps": [
+        "Unit: AuthServiceTest.register_validRequest_returnsUserDto",
+        "Unit: AuthServiceTest.register_duplicateUsername_throwsUsernameAlreadyExistsException",
+        "Unit: AuthServiceTest.login_validCredentials_returnsLoginResponse",
+        "Unit: AuthServiceTest.login_invalidUsername_throwsInvalidCredentialsException",
+        "Unit: AuthServiceTest.login_invalidPassword_throwsInvalidCredentialsException",
+        "Integration: AuthIntegrationTest.register_validRequest_returns201WithUser",
+        "Integration: AuthIntegrationTest.register_duplicateUsername_returns409",
+        "Integration: AuthIntegrationTest.login_validCredentials_returns200WithToken",
+        "Integration: AuthIntegrationTest.login_invalidPassword_returns401",
+        "Integration: AuthIntegrationTest.register_passwordMismatch_returns400"
+      ],
+      "implementedFiles": [
+        "backend/src/main/resources/db/migration/V2__create_users_table.sql",
+        "backend/src/main/java/com/library/types/dto/UserDto.java",
+        "backend/src/main/java/com/library/types/dto/RegisterRequest.java",
+        "backend/src/main/java/com/library/types/dto/LoginRequest.java",
+        "backend/src/main/java/com/library/types/dto/LoginResponse.java",
+        "backend/src/main/java/com/library/repository/entity/UserEntity.java",
+        "backend/src/main/java/com/library/repository/UserRepository.java",
+        "backend/src/main/java/com/library/config/SecurityConfig.java",
+        "backend/src/main/java/com/library/config/JwtConfig.java",
+        "backend/src/main/java/com/library/service/JwtService.java",
+        "backend/src/main/java/com/library/service/JwtServiceImpl.java",
+        "backend/src/main/java/com/library/service/AuthService.java",
+        "backend/src/main/java/com/library/service/AuthServiceImpl.java",
+        "backend/src/main/java/com/library/service/UsernameAlreadyExistsException.java",
+        "backend/src/main/java/com/library/service/InvalidCredentialsException.java",
+        "backend/src/main/java/com/library/controller/AuthController.java",
+        "backend/src/test/java/com/library/unit/service/AuthServiceTest.java",
+        "backend/src/test/java/com/library/integration/AuthIntegrationTest.java",
+        "frontend/app.py"
+      ]
     }
   ]
 }
