@@ -67,6 +67,9 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
+# Exec plan raw test output (generated during test runs)
+docs/exec-plans/raw-test-output/
+
 # Temporary files
 *.tmp
 *.bak

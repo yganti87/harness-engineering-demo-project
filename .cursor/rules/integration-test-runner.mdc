@@ -1,0 +1,13 @@
+---
+description: Run and analyze Maven integration test output. When running integration tests for plan execution or debugging — read and follow .ai/skills/integration-test-runner/SKILL.md. Do not trust exit code alone; Failsafe can exit 0 despite test failures.
+alwaysApply: false
+---
+
+# Integration Test Runner
+
+When running integration tests:
+
+1. Read [.ai/skills/integration-test-runner/SKILL.md](.ai/skills/integration-test-runner/SKILL.md)
+2. Capture raw output to `docs/exec-plans/raw-test-output/{plan-id}-integration-raw.txt`
+3. Run `./.ai/scripts/analyze-maven-test-output.sh <raw-file>` to determine success/failure
+4. Base pass/fail on analysis result, not process exit code

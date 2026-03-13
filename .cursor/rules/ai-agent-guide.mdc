@@ -14,6 +14,6 @@ alwaysApply: true
 
 Slash commands: `/run-tests`, `/logs`, `/build`, `/migrate`, `/db-shell` (see `.ai/commands/` for details).
 
-**Skills** (see [.ai/skills/](.ai/skills/) for details): create-pr — use when asked to create a GitHub PR.
+**Skills** (see [.ai/skills/](.ai/skills/) for details): create-pr, unit-test-runner, integration-test-runner — spec-exec uses test runners when running tests; do not trust Failsafe exit code alone.
 
 **Task agents** (see [.ai/agents/](.ai/agents/) for details): task-spec — use when asked to draft a task spec; task-exec — use when asked to implement or verify a task.
