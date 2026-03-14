@@ -45,7 +45,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,logfile,flyway,env
+        include: health,info,metrics,prometheus,logfile,flyway,env
   endpoint:
     health:
       show-details: always

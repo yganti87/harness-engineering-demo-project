@@ -82,7 +82,29 @@ Agents can access logs via:
 
 ## Monitoring
 
-- `GET /actuator/metrics` — JVM, HTTP, DB metrics
+- `GET /actuator/metrics` — JVM, HTTP, DB metrics (JSON)
+- `GET /actuator/prometheus` — Prometheus text format (scraped by Prometheus)
 - `GET /actuator/info` — app version, git commit (if configured)
 
 When adding new features, add a meaningful log at INFO level for the primary business operation (e.g., "Book search completed results={} query='{}'").
+
+## Prometheus & Grafana
+
+A local observability stack runs with Docker Compose. Agents and developers can query metrics with PromQL.
+
+| Service   | URL                     |
+|----------|-------------------------|
+| Prometheus | http://localhost:9090 |
+| Grafana    | http://localhost:3000 |
+
+**Grafana**: Login with `admin` / `admin` (change on first use). Prometheus is pre-configured as the default data source.
+
+**Example PromQL**:
+- `jvm_memory_used_bytes` — JVM heap/non-heap usage
+- `rate(http_server_requests_seconds_count[5m])` — HTTP request rate
+- `process_start_time_seconds` — app startup time (for SLO: startup &lt; 800ms)
+- `histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))` — HTTP latency p95
+
+**Example agent prompts**:
+- "Ensure service startup completes in under 800ms"
+- "Verify HTTP latency p95 is under 500ms"

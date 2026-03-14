@@ -46,10 +46,14 @@ git merge origin/main
 | Database | PostgreSQL 15 | 5433 (host), 5432 (container) |
 | Backend | Java 17 + Spring Boot 3.2.x | 8080 |
 | Frontend | Python 3.11 + Streamlit | 8501 |
+| Prometheus | Prometheus | 9090 |
+| Grafana | Grafana | 3000 |
 
 - **API docs**: http://localhost:8080/swagger-ui.html
 - **Health check**: http://localhost:8080/actuator/health
 - **Logs via HTTP**: http://localhost:8080/actuator/logfile
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
 
 ## Architecture — CRITICAL
 
