@@ -15,9 +15,13 @@
     },
     {
       "name": "frontend",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "--build", "frontend"],
-      "port": 8501
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [".ai/scripts/start-frontend-preview.sh"],
+      "port": 8501,
+      "env": {
+        "BACKEND_URL": "http://localhost:8080",
+        "LOG_DIR": "./logs/frontend"
+      }
     },
     {
       "name": "database",
