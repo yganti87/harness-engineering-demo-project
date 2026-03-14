@@ -17,11 +17,7 @@
       "name": "frontend",
       "runtimeExecutable": "bash",
       "runtimeArgs": [".ai/scripts/start-frontend-preview.sh"],
-      "port": 8501,
-      "env": {
-        "BACKEND_URL": "http://localhost:8080",
-        "LOG_DIR": "./logs/frontend"
-      }
+      "port": 8501
     },
     {
       "name": "database",
