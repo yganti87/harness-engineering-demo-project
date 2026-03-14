@@ -15,8 +15,8 @@
     },
     {
       "name": "frontend",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "--build", "frontend"],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [".ai/scripts/start-frontend-preview.sh"],
       "port": 8501
     },
     {
