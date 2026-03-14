@@ -17,16 +17,17 @@ Anonymous book search is live. Users can:
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
-| F001 | Anonymous Book Search | High | in_progress |
+| F001 | Anonymous Book Search | High | completed |
 | F002 | Book Detail View | Medium | planned |
-| F003 | User Registration & Login | Medium | planned |
-| F004 | User Borrowing (check out / return) | Medium | planned |
-| F005 | Book Availability Status | Medium | planned |
-| F006 | User Reading History | Low | planned |
-| F007 | Book Recommendations | Low | planned |
-| F008 | Admin: Add/Edit/Delete Books | Medium | planned |
-| F009 | Admin: Manage Users | Low | planned |
-| F010 | Export Catalog (CSV/PDF) | Low | planned |
+| F003 | User Registration & Login | Medium | completed |
+| F004 | Prometheus & Grafana Observability | Medium | completed |
+| F005 | User Borrowing (check out / return) | Medium | planned |
+| F006 | Book Availability Status | Medium | planned |
+| F007 | User Reading History | Low | planned |
+| F008 | Book Recommendations | Low | planned |
+| F009 | Admin: Add/Edit/Delete Books | Medium | planned |
+| F010 | Admin: Manage Users | Low | planned |
+| F011 | Export Catalog (CSV/PDF) | Low | planned |
 
 ## Design Principles
 

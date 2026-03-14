@@ -1,0 +1,106 @@
+# Verification Output: Plan 004 — Prometheus & Grafana Observability (F004)
+
+Timestamp: 2026-03-13
+Plan ID: 004-prometheus-grafana-observability
+
+## Verification Commands and Output
+
+### 1. ./scripts/start.sh
+
+Exit code: 0
+All services started successfully. Banner shows Prometheus (9090) and Grafana (3000) URLs.
+
+---
+### 2. curl http://localhost:8080/actuator/prometheus
+
+Exit code: 0
+Output (first 25 lines):
+
+# HELP hikaricp_connections_idle Idle connections
+# TYPE hikaricp_connections_idle gauge
+hikaricp_connections_idle{pool="HikariPool-1",} 2.0
+# HELP hikaricp_connections_active Active connections
+# TYPE hikaricp_connections_active gauge
+hikaricp_connections_active{pool="HikariPool-1",} 0.0
+# HELP executor_queued_tasks The approximate number of tasks that are queued for execution
+# TYPE executor_queued_tasks gauge
+executor_queued_tasks{name="applicationTaskExecutor",} 0.0
+# HELP tomcat_sessions_alive_max_seconds
+# TYPE tomcat_sessions_alive_max_seconds gauge
+tomcat_sessions_alive_max_seconds 0.0
+# HELP logback_events_total Number of log events that were enabled by the effective log level
+# TYPE logback_events_total counter
+logback_events_total{level="warn",} 0.0
+logback_events_total{level="debug",} 0.0
+logback_events_total{level="error",} 0.0
+logback_events_total{level="trace",} 0.0
+logback_events_total{level="info",} 6.0
+# HELP process_files_max_files The maximum file descriptor count
+# TYPE process_files_max_files gauge
+process_files_max_files 1048576.0
+# HELP spring_security_http_secured_requests_seconds
+# TYPE spring_security_http_secured_requests_seconds summary
+spring_security_http_secured_requests_seconds_count{error="none",} 138.0
+
+---
+### 3. curl http://localhost:9090/api/v1/query?query=up
+
+Exit code: 0
+Output:
+
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"__name__":"up","instance":"backend:8080","job":"library-backend"},"value":[1773452193.049,"1"]}]}}
+
+Interpretation: up=1 for backend:8080 — Prometheus target UP.
+
+---
+### 4. curl http://localhost:9090/api/v1/query?query=jvm_memory_used_bytes
+
+Exit code: 0
+Output: JVM metrics series count: 8
+
+Interpretation: Prometheus has scraped JVM memory metrics from backend.
+
+---
+### 5. curl http://localhost:3000/api/health
+
+Exit code: 0
+HTTP status: 200
+
+Interpretation: Grafana is healthy and reachable.
+
+---
+### 6. curl http://localhost:8080/actuator/health
+
+Exit code: 0
+Output:
+
+{"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"diskSpace":{"status":"UP","details":{"total":62671097856,"free":52680810496,"threshold":10485760,"path":"/app/.","exists":true}},"ping":{"status":"UP"}}}
+
+Interpretation: Backend healthy, DB connected, disk space OK.
+
+---
+### 7. docker ps (backend, prometheus, grafana)
+
+Output:
+
+library-grafana: Up 7 seconds
+library-prometheus: Up 7 seconds
+library-backend: Up 29 minutes (healthy)
+
+Interpretation: All containers running; backend healthy.
+
+---
+
+## Summary
+
+| Criterion | Result |
+|-----------|--------|
+| start.sh — all services healthy | PASS |
+| GET /actuator/prometheus returns Prometheus format | PASS |
+| Prometheus targets show library-backend UP | PASS |
+| Prometheus has JVM metrics (jvm_memory_used_bytes) | PASS |
+| Grafana reachable (HTTP 200) | PASS |
+| Backend health UP | PASS |
+| Containers running | PASS |
+
+Overall: PASS — all verification criteria met.

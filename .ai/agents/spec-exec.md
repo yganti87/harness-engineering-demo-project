@@ -67,8 +67,11 @@ See [docs/exec-plans/active/001-library-search.md](../docs/exec-plans/active/001
    - Start services: `./scripts/start.sh`
    - Wait for backend to be ready (health check)
    - Run integration tests: `cd backend && mvn test -Dgroups=integration`
-   - Verify API: `curl http://localhost:8080/actuator/health` and `curl "http://localhost:8080/api/v1/books/search?q=spring"`
-   - Verify UI: open http://localhost:8501 and confirm search works
+   - Run all verification commands from the plan's Test Plan / Phase 5 (API, UI, Prometheus, Grafana, etc.)
+   - **Write verification output**: Capture the output of all verification commands (curl, API responses, Prometheus query results, container status) to `docs/verification-output/{plan-id}-verification.txt`. Create `docs/verification-output/` if it does not exist. Include:
+     - Timestamp and plan ID
+     - Each verification command run and its output (or exit code)
+     - Summary: PASS or FAIL per criterion
 7. Update exec plan checkboxes `- [x]` as steps complete
 8. Update features.json `implementedFiles` and `status` when done
 9. Move completed plan to `docs/exec-plans/completed/` and update docs/PLANS.md

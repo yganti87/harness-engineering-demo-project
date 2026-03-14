@@ -86,9 +86,10 @@ cd frontend && python -m pytest tests/ -v
 3. **Clarify ambiguities** if any — ask the user before coding
 4. Implement following layer order: types → config → repository → service → controller
 5. Run the **Verification** subset from the task spec — not necessarily full `./scripts/run-tests.sh`
-6. If verification passes: update exec plan checkboxes `- [x]`
-7. Move completed plan to `docs/task-exec-plans/completed/`
-8. Update [docs/TASKS.md](../docs/TASKS.md) — move from Active to Completed
+6. **Write verification output**: Capture the output of all verification commands to `docs/verification-output/{task-id}-verification.txt`. Create `docs/verification-output/` if it does not exist. Include: timestamp, each command run and its output, summary (PASS/FAIL per criterion).
+7. If verification passes: update exec plan checkboxes `- [x]`
+8. Move completed plan to `docs/task-exec-plans/completed/`
+9. Update [docs/TASKS.md](../docs/TASKS.md) — move from Active to Completed
 
 ## Do NOT
 

@@ -115,6 +115,37 @@
         "backend/src/test/java/com/library/integration/AuthIntegrationTest.java",
         "frontend/app.py"
       ]
+    },
+    {
+      "id": "F004",
+      "name": "Prometheus & Grafana Observability",
+      "status": "completed",
+      "priority": "medium",
+      "description": "Local Prometheus and Grafana stack for metrics (PromQL) and dashboards, enabling agents and developers to observe app behavior and validate SLOs.",
+      "acceptanceCriteria": [
+        "Backend exposes GET /actuator/prometheus in Prometheus text format",
+        "Prometheus scrapes backend every 15s and shows target UP",
+        "Grafana runs on port 3000 with Prometheus as default data source",
+        "Docker Compose includes prometheus and grafana services on library-network",
+        "start.sh prints Grafana and Prometheus URLs in success banner",
+        "docs/RELIABILITY.md documents PromQL examples and agent prompts",
+        "AGENTS.md includes Prometheus/Grafana in component table"
+      ],
+      "testSteps": [
+        "Manual: curl http://localhost:8080/actuator/prometheus returns Prometheus format",
+        "Manual: Prometheus Targets show library-backend UP",
+        "Manual: Grafana Explore can run PromQL e.g. jvm_memory_used_bytes"
+      ],
+      "implementedFiles": [
+        "backend/pom.xml",
+        "backend/src/main/resources/application.yml",
+        "monitoring/prometheus/prometheus.yml",
+        "monitoring/grafana/provisioning/datasources/datasource.yml",
+        "docker-compose.yml",
+        "scripts/start.sh",
+        "docs/RELIABILITY.md",
+        "AGENTS.md"
+      ]
     }
   ]
 }

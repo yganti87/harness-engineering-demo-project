@@ -51,6 +51,8 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
         echo "│  Swagger UI:    http://localhost:8080/swagger-ui.html    │"
         echo "│  Health:        http://localhost:8080/actuator/health    │"
         echo "│  Frontend:      http://localhost:8501                    │"
+        echo "│  Prometheus:    http://localhost:9090                    │"
+        echo "│  Grafana:       http://localhost:3000  (admin/admin)     │"
         echo "│  Database:      localhost:5433 (PostgreSQL)              │"
         echo "├──────────────────────────────────────────────────────────┤"
         echo "│  Logs:          ./logs/backend/app.log                   │"
