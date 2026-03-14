@@ -117,6 +117,46 @@
       ]
     },
     {
+      "id": "F005",
+      "name": "Auth-Gated Landing Page",
+      "status": "completed",
+      "priority": "high",
+      "description": "Redesign the logged-out experience: show a hero landing page with prominent Login/Create Account tabs and hide the book catalog from unauthenticated users.",
+      "acceptanceCriteria": [
+        "Unauthenticated users see ONLY the landing page — no search form, no book results",
+        "Landing page displays a centered hero title and welcoming subtitle",
+        "Landing page renders two tabs ('Log In' and 'Create Account') centered via a [1, 2, 1] column layout",
+        "Log In tab shows: 'Welcome back' heading, Username field, Password field, full-width Log In button",
+        "Create Account tab shows: 'Create your account' heading, Username field (max 50 chars), Password field, Confirm Password field, full-width Create Account button",
+        "Footer text 'Free to use. No credit card required.' is shown below the auth forms",
+        "Successful login sets session state and reruns into the full catalog experience",
+        "Successful registration shows a success message directing user to the Log In tab (no automatic login)",
+        "After logout, user returns to the landing page",
+        "Logged-in state is unchanged: header with welcome + logout, search form, paginated book grid",
+        "All existing API helper functions (search_books, register_user, login_user) are functionally unchanged",
+        "All session state keys retain the st_ prefix convention",
+        "All existing backend unit and integration tests continue to pass",
+        "Frontend tests updated to cover the new landing page layout"
+      ],
+      "testSteps": [
+        "Frontend: TestSearchApiHelper::test_search_with_keyword_returns_data",
+        "Frontend: TestSearchApiHelper::test_search_connection_error_returns_none",
+        "Frontend: TestSearchApiHelper::test_search_empty_query_returns_all",
+        "Frontend: TestRegisterApiHelper::test_register_valid_request_returns_user_data",
+        "Frontend: TestRegisterApiHelper::test_register_password_mismatch_returns_none",
+        "Frontend: TestRegisterApiHelper::test_register_connection_error_returns_none",
+        "Frontend: TestRegisterApiHelper::test_register_duplicate_username_returns_none",
+        "Frontend: TestLoginApiHelper::test_login_valid_credentials_returns_token_data",
+        "Frontend: TestLoginApiHelper::test_login_invalid_credentials_returns_none",
+        "Frontend: TestLoginApiHelper::test_login_connection_error_returns_none",
+        "Frontend: TestGenreOptions::test_genre_map_includes_all_backend_genres"
+      ],
+      "implementedFiles": [
+        "frontend/app.py",
+        "frontend/tests/test_app.py"
+      ]
+    },
+    {
       "id": "F004",
       "name": "Prometheus & Grafana Observability",
       "status": "completed",

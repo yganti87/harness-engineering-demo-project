@@ -270,6 +270,175 @@ def render_pagination(total_pages: int, current_page: int) -> None:
                 st.rerun()
 
 
+def render_landing_page() -> None:
+    """Render the landing page for logged-out users: hero section + auth forms."""
+    st.write("")
+
+    _, hero_col, _ = st.columns([1, 2, 1])
+    with hero_col:
+        st.markdown(
+            "<h1 style='text-align: center; margin-bottom: 0;'>📚 Library Catalog</h1>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            "<p style='text-align: center;'>Discover, search, and explore our curated collection "
+            "of books. Sign in to browse the full catalog, filter by genre, and find your next "
+            "great read.</p>",
+            unsafe_allow_html=True,
+        )
+
+    _, form_col, _ = st.columns([1, 2, 1])
+    with form_col:
+        login_tab, register_tab = st.tabs(["Log In", "Create Account"])
+
+        with login_tab:
+            st.markdown("##### Welcome back")
+            with st.form(key="login_form"):
+                login_username = st.text_input(
+                    "Username",
+                    key="login_username",
+                )
+                login_password = st.text_input(
+                    "Password",
+                    type="password",
+                    key="login_password",
+                )
+                if st.form_submit_button("Log In", use_container_width=True):
+                    if login_username and login_password:
+                        data = login_user(login_username, login_password)
+                        if data:
+                            st.session_state.st_user = {
+                                "id": data.get("userId"),
+                                "username": data.get("username"),
+                            }
+                            st.session_state.st_token = data.get("token")
+                            st.rerun()
+
+        with register_tab:
+            st.markdown("##### Create your account")
+            with st.form(key="register_form"):
+                reg_username = st.text_input(
+                    "Username",
+                    max_chars=50,
+                    placeholder="3–50 chars, letters, numbers, underscore",
+                    key="reg_username",
+                )
+                reg_password = st.text_input(
+                    "Password",
+                    type="password",
+                    placeholder="At least 8 characters",
+                    key="reg_password",
+                )
+                reg_confirm = st.text_input(
+                    "Confirm Password",
+                    type="password",
+                    key="reg_confirm",
+                )
+                if st.form_submit_button("Create Account", use_container_width=True):
+                    if reg_username and reg_password and reg_confirm:
+                        data = register_user(reg_username, reg_password, reg_confirm)
+                        if data:
+                            st.success(
+                                "Account created successfully! Switch to the **Log In** tab to sign in."
+                            )
+
+    _, footer_col, _ = st.columns([1, 2, 1])
+    with footer_col:
+        st.caption("Free to use. No credit card required.")
+
+
+def render_catalog() -> None:
+    """Render the full catalog experience for logged-in users."""
+    # ── Header ─────────────────────────────────────────────────────────────────
+    header_col_title, header_col_auth = st.columns([3, 1])
+    with header_col_title:
+        st.title("📚 Library Catalog")
+    with header_col_auth:
+        user = st.session_state.st_user
+        st.markdown(f"**Welcome, {user.get('username', 'User')}**")
+        if st.button("Logout", key="btn_logout"):
+            st.session_state.st_user = None
+            st.session_state.st_token = None
+            st.rerun()
+
+    # ── Search form ─────────────────────────────────────────────────────────────
+    with st.form(key="search_form"):
+        col_search, col_genre, col_btn = st.columns([4, 2, 1])
+
+        with col_search:
+            query_input = st.text_input(
+                "Search",
+                value=st.session_state.st_search_query,
+                placeholder="Search by title, author, or ISBN...",
+                max_chars=200,
+                label_visibility="collapsed",
+            )
+        with col_genre:
+            genre_keys = list(GENRE_OPTIONS.keys())
+            current_genre_index = (
+                genre_keys.index(st.session_state.st_genre_filter)
+                if st.session_state.st_genre_filter in genre_keys
+                else 0
+            )
+            genre_input = st.selectbox(
+                "Genre",
+                options=genre_keys,
+                format_func=lambda k: GENRE_OPTIONS[k],
+                index=current_genre_index,
+                label_visibility="collapsed",
+            )
+        with col_btn:
+            submitted = st.form_submit_button("Search", use_container_width=True)
+
+    if submitted:
+        st.session_state.st_search_query = query_input
+        st.session_state.st_genre_filter = genre_input
+        st.session_state.st_current_page = 0
+
+    # ── Search results ──────────────────────────────────────────────────────────
+    current_query = st.session_state.st_search_query
+    current_genre = st.session_state.st_genre_filter
+    current_page = st.session_state.st_current_page
+
+    result = search_books(
+        query=current_query,
+        genre=current_genre,
+        page=current_page,
+        size=PAGE_SIZE,
+    )
+
+    if result is not None:
+        total_elements = result.get("totalElements", 0)
+        total_pages = result.get("totalPages", 0)
+        books = result.get("content", [])
+
+        # Result summary
+        if current_query or current_genre:
+            parts = []
+            if current_query:
+                parts.append(f"matching **'{current_query}'**")
+            if current_genre:
+                parts.append(f"in **{GENRE_OPTIONS.get(current_genre, current_genre)}**")
+            st.markdown(f"Found **{total_elements}** book(s) {' '.join(parts)}")
+        else:
+            st.markdown(f"Showing all **{total_elements}** books in the catalog")
+
+        if books:
+            left_col, right_col = st.columns(2)
+            for idx, book in enumerate(books):
+                with (left_col if idx % 2 == 0 else right_col):
+                    render_book_card(book)
+
+            if total_pages > 1:
+                st.divider()
+                render_pagination(total_pages, current_page)
+        else:
+            st.info(
+                "No books found matching your search. "
+                "Try different keywords or clear the genre filter."
+            )
+
+
 # ── Page configuration ─────────────────────────────────────────────────────────
 # Must be the first Streamlit call in the script.
 st.set_page_config(
@@ -291,144 +460,8 @@ if "st_user" not in st.session_state:
 if "st_token" not in st.session_state:
     st.session_state.st_token = None
 
-# ── Header ─────────────────────────────────────────────────────────────────────
-header_col_title, header_col_auth = st.columns([3, 1])
-with header_col_title:
-    st.title("📚 Library Catalog")
-    st.markdown("Search our collection of books.")
-with header_col_auth:
-    user = st.session_state.st_user
-    if user is not None:
-        st.markdown(f"**Welcome, {user.get('username', 'User')}**")
-        if st.button("Logout", key="btn_logout"):
-            st.session_state.st_user = None
-            st.session_state.st_token = None
-            st.rerun()
-    else:
-        with st.expander("Create Account", expanded=False):
-            with st.form(key="register_form"):
-                reg_username = st.text_input(
-                    "Username",
-                    max_chars=50,
-                    placeholder="3–50 chars, letters, numbers, underscore",
-                    key="reg_username",
-                )
-                reg_password = st.text_input(
-                    "Password",
-                    type="password",
-                    placeholder="At least 8 characters",
-                    key="reg_password",
-                )
-                reg_confirm = st.text_input(
-                    "Confirm Password",
-                    type="password",
-                    key="reg_confirm",
-                )
-                if st.form_submit_button("Create Account"):
-                    if reg_username and reg_password and reg_confirm:
-                        data = register_user(
-                            reg_username, reg_password, reg_confirm
-                        )
-                        if data:
-                            st.success("Account created! Please log in.")
-                            st.rerun()
-
-        with st.expander("Login", expanded=False):
-            with st.form(key="login_form"):
-                login_username = st.text_input(
-                    "Username",
-                    key="login_username",
-                )
-                login_password = st.text_input(
-                    "Password",
-                    type="password",
-                    key="login_password",
-                )
-                if st.form_submit_button("Log In"):
-                    if login_username and login_password:
-                        data = login_user(login_username, login_password)
-                        if data:
-                            st.session_state.st_user = {
-                                "id": data.get("userId"),
-                                "username": data.get("username"),
-                            }
-                            st.session_state.st_token = data.get("token")
-                            st.success("Logged in!")
-                            st.rerun()
-
-# ── Search form ────────────────────────────────────────────────────────────────
-with st.form(key="search_form"):
-    col_search, col_genre, col_btn = st.columns([4, 2, 1])
-
-    with col_search:
-        query_input = st.text_input(
-            "Search",
-            value=st.session_state.st_search_query,
-            placeholder="Search by title, author, or ISBN...",
-            max_chars=200,
-            label_visibility="collapsed",
-        )
-    with col_genre:
-        genre_keys = list(GENRE_OPTIONS.keys())
-        current_genre_index = (
-            genre_keys.index(st.session_state.st_genre_filter)
-            if st.session_state.st_genre_filter in genre_keys
-            else 0
-        )
-        genre_input = st.selectbox(
-            "Genre",
-            options=genre_keys,
-            format_func=lambda k: GENRE_OPTIONS[k],
-            index=current_genre_index,
-            label_visibility="collapsed",
-        )
-    with col_btn:
-        submitted = st.form_submit_button("Search", use_container_width=True)
-
-if submitted:
-    st.session_state.st_search_query = query_input
-    st.session_state.st_genre_filter = genre_input
-    st.session_state.st_current_page = 0
-
-# ── Search results ─────────────────────────────────────────────────────────────
-current_query = st.session_state.st_search_query
-current_genre = st.session_state.st_genre_filter
-current_page = st.session_state.st_current_page
-
-result = search_books(
-    query=current_query,
-    genre=current_genre,
-    page=current_page,
-    size=PAGE_SIZE,
-)
-
-if result is not None:
-    total_elements = result.get("totalElements", 0)
-    total_pages = result.get("totalPages", 0)
-    books = result.get("content", [])
-
-    # Result summary
-    if current_query or current_genre:
-        parts = []
-        if current_query:
-            parts.append(f"matching **'{current_query}'**")
-        if current_genre:
-            parts.append(f"in **{GENRE_OPTIONS.get(current_genre, current_genre)}**")
-        st.markdown(f"Found **{total_elements}** book(s) {' '.join(parts)}")
-    else:
-        st.markdown(f"Showing all **{total_elements}** books in the catalog")
-
-    if books:
-        left_col, right_col = st.columns(2)
-        for idx, book in enumerate(books):
-            with (left_col if idx % 2 == 0 else right_col):
-                render_book_card(book)
-
-        if total_pages > 1:
-            st.divider()
-            render_pagination(total_pages, current_page)
-    else:
-        st.info(
-            "No books found matching your search. "
-            "Try different keywords or clear the genre filter."
-        )
+# ── Main rendering: gate on authentication ─────────────────────────────────────
+if st.session_state.st_user is None:
+    render_landing_page()
+else:
+    render_catalog()

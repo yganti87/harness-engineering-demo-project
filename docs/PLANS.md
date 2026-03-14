@@ -4,7 +4,9 @@
 
 ### Active Plans
 
-None currently.
+| Plan | Feature | Status |
+|------|---------|--------|
+| [005-auth-gated-landing-page.md](../docs/product-specs/005-auth-gated-landing-page.md) | F005 Auth-Gated Landing Page | planned |
 
 ### Completed Plans
 
