@@ -19,17 +19,25 @@ Execute this full flow: draft commit → commit → push → open PR.
 - If on `main` or `master`: create and switch to `git checkout -b <type>/<scope>-<slug>` (e.g. `feat/search-add-book-search`)
 - If already on a feature branch: stay on it
 
-### Step 3: Draft and create commit
+### Step 3: Ensure execution plan and test artifacts are checked in
+
+- **IMPORTANT**: Before creating the PR, verify that the execution plan has been committed.
+- If this is a feature (F00x), check that `docs/exec-plans/completed/{id}-{name}.md` exists. If not, create it from the plan file.
+- Update `docs/PLANS.md` to move the feature from Active to Completed (or add it to Completed if missing).
+- Include test screenshots in `test-output/F00x/` if browser verification was performed.
+- Commit any missing execution plan or test artifacts before proceeding.
+
+### Step 4: Draft and create commit
 
 - Stage relevant files: `git add <paths>` (exclude unrelated files like `.env`, IDE config)
 - Generate commit message: `type(scope): brief description` (Conventional Commits)
 - Run `git commit -m "<message>"`
 
-### Step 4: Push
+### Step 5: Push
 
 - Run `git push -u origin <branch>`
 
-### Step 5: Open PR
+### Step 6: Open PR
 
 - Load GH_TOKEN from project `.env` if present (needed for non-interactive use): `[ -f .env ] && set -a && . ./.env && set +a`
 - Run `gh pr create --title "<commit title>" --body "<description>"` (see body template below)
