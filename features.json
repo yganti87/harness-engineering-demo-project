@@ -186,6 +186,25 @@
         "docs/RELIABILITY.md",
         "AGENTS.md"
       ]
+    },
+    {
+      "id": "F006",
+      "name": "Create Account Success UX",
+      "status": "planned",
+      "priority": "medium",
+      "description": "Replace the Create Account form with a success confirmation view after successful registration, with a 'Go to Log In' button that navigates the user to the Log In tab.",
+      "acceptanceCriteria": [
+        "After successful account creation, the registration form is replaced by a success confirmation view",
+        "Success view displays 'Account Created!' heading and 'Your account has been created successfully.' subtitle",
+        "Success view displays a full-width 'Go to Log In' button",
+        "Clicking 'Go to Log In' clears the success state and switches to the Log In tab",
+        "On failed account creation, the form remains visible with st.error() messages",
+        "Session state key st_registration_success (bool) controls rendering",
+        "No form fields are visible after successful registration",
+        "All existing backend and frontend tests continue to pass"
+      ],
+      "testSteps": [],
+      "implementedFiles": []
     }
   ]
 }
