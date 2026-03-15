@@ -6,7 +6,7 @@
 
 | Plan | Feature | Status |
 |------|---------|--------|
-| [005-auth-gated-landing-page.md](../docs/product-specs/005-auth-gated-landing-page.md) | F005 Auth-Gated Landing Page | planned |
+| _(none)_ | | |
 
 ### Completed Plans
 
@@ -15,6 +15,8 @@
 | [001-library-search.md](exec-plans/completed/001-library-search.md) | F001 Anonymous Book Search | completed |
 | [003-user-authentication.md](exec-plans/completed/003-user-authentication.md) | F003 User Authentication | completed |
 | [004-prometheus-grafana-observability.md](exec-plans/completed/004-prometheus-grafana-observability.md) | F004 Prometheus & Grafana Observability | completed |
+| [005-auth-gated-landing-page.md](exec-plans/completed/005-auth-gated-landing-page.md) | F005 Auth-Gated Landing Page | completed |
+| [006-create-account-ux.md](exec-plans/completed/006-create-account-ux.md) | F006 Create Account Success UX | completed |
 
 ## Tasks (Task Exec Plans)
 
