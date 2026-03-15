@@ -190,7 +190,7 @@
     {
       "id": "F006",
       "name": "Create Account Success UX",
-      "status": "planned",
+      "status": "completed",
       "priority": "medium",
       "description": "Replace the Create Account form with a success confirmation view after successful registration, with a 'Go to Log In' button that navigates the user to the Log In tab.",
       "acceptanceCriteria": [
@@ -204,7 +204,9 @@
         "All existing backend and frontend tests continue to pass"
       ],
       "testSteps": [],
-      "implementedFiles": []
+      "implementedFiles": [
+        "frontend/app.py"
+      ]
     }
   ]
 }

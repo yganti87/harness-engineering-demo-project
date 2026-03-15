@@ -315,32 +315,38 @@ def render_landing_page() -> None:
                             st.rerun()
 
         with register_tab:
-            st.markdown("##### Create your account")
-            with st.form(key="register_form"):
-                reg_username = st.text_input(
-                    "Username",
-                    max_chars=50,
-                    placeholder="3–50 chars, letters, numbers, underscore",
-                    key="reg_username",
-                )
-                reg_password = st.text_input(
-                    "Password",
-                    type="password",
-                    placeholder="At least 8 characters",
-                    key="reg_password",
-                )
-                reg_confirm = st.text_input(
-                    "Confirm Password",
-                    type="password",
-                    key="reg_confirm",
-                )
-                if st.form_submit_button("Create Account", use_container_width=True):
-                    if reg_username and reg_password and reg_confirm:
-                        data = register_user(reg_username, reg_password, reg_confirm)
-                        if data:
-                            st.success(
-                                "Account created successfully! Switch to the **Log In** tab to sign in."
-                            )
+            if st.session_state.st_registration_success:
+                st.success("Account Created!")
+                st.markdown("Your account has been created successfully.")
+                if st.button("Go to Log In", use_container_width=True):
+                    st.session_state.st_registration_success = False
+                    st.rerun()
+            else:
+                st.markdown("##### Create your account")
+                with st.form(key="register_form"):
+                    reg_username = st.text_input(
+                        "Username",
+                        max_chars=50,
+                        placeholder="3–50 chars, letters, numbers, underscore",
+                        key="reg_username",
+                    )
+                    reg_password = st.text_input(
+                        "Password",
+                        type="password",
+                        placeholder="At least 8 characters",
+                        key="reg_password",
+                    )
+                    reg_confirm = st.text_input(
+                        "Confirm Password",
+                        type="password",
+                        key="reg_confirm",
+                    )
+                    if st.form_submit_button("Create Account", use_container_width=True):
+                        if reg_username and reg_password and reg_confirm:
+                            data = register_user(reg_username, reg_password, reg_confirm)
+                            if data:
+                                st.session_state.st_registration_success = True
+                                st.rerun()
 
     _, footer_col, _ = st.columns([1, 2, 1])
     with footer_col:
@@ -459,6 +465,8 @@ if "st_user" not in st.session_state:
     st.session_state.st_user = None
 if "st_token" not in st.session_state:
     st.session_state.st_token = None
+if "st_registration_success" not in st.session_state:
+    st.session_state.st_registration_success = False
 
 # ── Main rendering: gate on authentication ─────────────────────────────────────
 if st.session_state.st_user is None:
