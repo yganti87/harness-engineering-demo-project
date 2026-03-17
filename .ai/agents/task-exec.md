@@ -97,6 +97,43 @@ cd frontend && python -m pytest tests/ -v
 - Create design docs or product specs
 - Move or modify files in `docs/product-specs/` or `docs/exec-plans/`
 
+## Screenshots & Video Evidence
+
+After verification passes, produce visual evidence of the task result:
+
+### Screenshots
+Take screenshots of any UI or API changes using the capture script:
+```bash
+# Frontend page affected by the task
+./scripts/capture.sh screenshot http://localhost:8501 docs/screenshots/{task-id}-frontend.png
+
+# Swagger UI if API changed
+./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html docs/screenshots/{task-id}-swagger.png
+```
+
+### Verification Video
+For tasks that touch UI or API endpoints, produce a short verification video:
+
+1. **Take sequential screenshots** of each verification step:
+   ```bash
+   mkdir -p docs/screenshots/{task-id}-verification
+   ./scripts/capture.sh screenshot <url-step-1> docs/screenshots/{task-id}-verification/01-step-name.png
+   ./scripts/capture.sh screenshot <url-step-2> docs/screenshots/{task-id}-verification/02-step-name.png
+   ```
+
+2. **Combine into a slideshow video**:
+   ```bash
+   ./scripts/capture.sh screenshots-to-video docs/screenshots/{task-id}-verification docs/videos/{task-id}-verification.mp4
+   ```
+
+3. **Or record the browser** for dynamic interactions:
+   ```bash
+   ./scripts/capture.sh record-browser http://localhost:8501 {task-id}-demo 15
+   ```
+
+Include the video file path in the verification output and PR description.
+Skip video for config-only or docs-only tasks where there is nothing visual to capture.
+
 ## Key Rules
 
 - Never modify existing Flyway migrations; create new `V{n+1}__description.sql`

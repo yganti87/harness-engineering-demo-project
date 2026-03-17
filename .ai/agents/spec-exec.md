@@ -116,6 +116,43 @@ The exec plan file is the plan of record. After user approval of an updated plan
 - Update `docs/PLANS.md` if the plan structure (e.g. file path) changes
 - Do not make plan changes without prior user approval
 
+## Screenshots & Video Evidence
+
+After verification passes, produce visual evidence of the feature working:
+
+### Screenshots
+Take screenshots of all relevant UI pages and API responses using the capture script:
+```bash
+# Frontend pages
+./scripts/capture.sh screenshot http://localhost:8501 docs/screenshots/{plan-id}-frontend.png
+
+# Swagger UI showing new endpoints
+./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html docs/screenshots/{plan-id}-swagger.png
+```
+
+### Verification Video
+Produce a short video demonstrating the feature works end-to-end:
+
+1. **Take sequential screenshots** of each verification step (API calls, UI interactions, logs):
+   ```bash
+   mkdir -p docs/screenshots/{plan-id}-verification
+   ./scripts/capture.sh screenshot <url-step-1> docs/screenshots/{plan-id}-verification/01-step-name.png
+   ./scripts/capture.sh screenshot <url-step-2> docs/screenshots/{plan-id}-verification/02-step-name.png
+   # ... one per verification step
+   ```
+
+2. **Combine into a slideshow video** (3 seconds per screenshot):
+   ```bash
+   ./scripts/capture.sh screenshots-to-video docs/screenshots/{plan-id}-verification docs/videos/{plan-id}-verification.mp4
+   ```
+
+3. **Or record the browser** for dynamic UI interactions:
+   ```bash
+   ./scripts/capture.sh record-browser http://localhost:8501 {plan-id}-demo 15
+   ```
+
+The video file path must be included in the verification output file and PR description.
+
 ## Key Rules
 
 - Never modify existing Flyway migrations; create new `V{n+1}__description.sql`

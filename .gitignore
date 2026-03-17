@@ -1,6 +1,7 @@
 # Environment
 .env
 !.env.example
+.codespace.env
 
 # Logs (host-mounted from containers)
 logs/
@@ -69,6 +70,10 @@ $RECYCLE.BIN/
 
 # Exec plan raw test output (generated during test runs)
 docs/exec-plans/raw-test-output/
+
+# Agent capture artifacts (screenshots, videos, recordings)
+docs/screenshots/
+docs/videos/
 
 # Temporary files
 *.tmp

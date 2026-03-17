@@ -15,7 +15,10 @@
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
   },
 
   "forwardPorts": [8080, 8501, 5433, 9090, 3000],
@@ -31,7 +34,7 @@
     "TESTCONTAINERS_RYUK_DISABLED": "false"
   },
 
-  "postCreateCommand": "cp -n .env.example .env 2>/dev/null || true && mkdir -p logs/backend logs/frontend && docker compose build",
+  "postCreateCommand": "cp -n .env.example .env 2>/dev/null || true && mkdir -p logs/backend logs/frontend docs/screenshots docs/videos && sudo apt-get update && sudo apt-get install -y ffmpeg xvfb fonts-liberation libnss3 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libcairo2 libcups2 libxkbcommon0 && npm install -g @anthropic-ai/claude-code && pip install playwright asciinema && playwright install chromium && docker compose build",
   "postStartCommand": "docker compose up -d",
 
   "customizations": {
@@ -68,6 +71,10 @@
     "GH_TOKEN": {
       "description": "GitHub personal access token (repo scope). Used by gh CLI and automation agents.",
       "documentationUrl": "https://github.com/settings/tokens/new"
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic API key for Claude Code CLI. Required for headless agent execution.",
+      "documentationUrl": "https://console.anthropic.com/settings/keys"
     }
   },
 

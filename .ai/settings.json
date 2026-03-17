@@ -7,7 +7,13 @@
       "Bash(cd frontend && python -m pytest *)",
       "Bash(curl http://localhost:8080/*)",
       "Bash(docker inspect *)",
-      "Bash(chmod +x *)"
+      "Bash(chmod +x *)",
+      "Bash(gh codespace *)",
+      "Bash(./scripts/codespace-exec.sh*)",
+      "Bash(./scripts/capture.sh*)",
+      "Bash(playwright *)",
+      "Bash(ffmpeg *)",
+      "Bash(asciinema *)"
     ]
   }
 }
