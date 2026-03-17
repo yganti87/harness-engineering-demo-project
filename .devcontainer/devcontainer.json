@@ -1,0 +1,79 @@
+{
+  "name": "Library App Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "jdkDistro": "tem",
+      "installMaven": "true",
+      "mavenVersion": "3.9.6"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "forwardPorts": [8080, 8501, 5433, 9090, 3000],
+  "portsAttributes": {
+    "8080": { "label": "Backend API", "onAutoForward": "notify" },
+    "8501": { "label": "Frontend UI", "onAutoForward": "openBrowser" },
+    "5433": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "9090": { "label": "Prometheus", "onAutoForward": "silent" },
+    "3000": { "label": "Grafana", "onAutoForward": "silent" }
+  },
+
+  "containerEnv": {
+    "TESTCONTAINERS_RYUK_DISABLED": "false"
+  },
+
+  "postCreateCommand": "cp -n .env.example .env 2>/dev/null || true && mkdir -p logs/backend logs/frontend && docker compose build",
+  "postStartCommand": "docker compose up -d",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-17",
+            "default": true
+          }
+        ],
+        "java.compile.nullAnalysis.mode": "automatic",
+        "python.defaultInterpreterPath": "/usr/local/bin/python3",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-spring-boot-dashboard",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "redhat.vscode-xml",
+        "humao.rest-client"
+      ]
+    }
+  },
+
+  "secrets": {
+    "GH_TOKEN": {
+      "description": "GitHub personal access token (repo scope). Used by gh CLI and automation agents.",
+      "documentationUrl": "https://github.com/settings/tokens/new"
+    }
+  },
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}
