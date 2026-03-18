@@ -71,9 +71,8 @@ $RECYCLE.BIN/
 # Exec plan raw test output (generated during test runs)
 docs/exec-plans/raw-test-output/
 
-# Agent capture artifacts (screenshots, videos, recordings)
-docs/screenshots/
-docs/videos/
+# Agent capture artifacts are tracked under docs/verification-output/{id}/
+# (intentionally committed as verification evidence)
 
 # Temporary files
 *.tmp

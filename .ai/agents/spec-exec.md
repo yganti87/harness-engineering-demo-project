@@ -118,16 +118,37 @@ The exec plan file is the plan of record. After user approval of an updated plan
 
 ## Screenshots & Video Evidence
 
-After verification passes, produce visual evidence of the feature working:
+After verification passes, produce visual evidence of the feature working and **commit it**
+so there is a permanent record on GitHub.
+
+### Output directory
+
+All capture artifacts go under `docs/verification-output/{plan-id}/`:
+
+```
+docs/verification-output/{plan-id}/
+  screenshots/
+    frontend.png
+    swagger.png
+    01-step-name.png
+    02-step-name.png
+    ...
+  videos/
+    {plan-id}-verification.mp4
+```
 
 ### Screenshots
-Take screenshots of all relevant UI pages and API responses using the capture script:
+Take screenshots of all relevant UI pages and API responses:
 ```bash
+mkdir -p docs/verification-output/{plan-id}/screenshots
+
 # Frontend pages
-./scripts/capture.sh screenshot http://localhost:8501 docs/screenshots/{plan-id}-frontend.png
+./scripts/capture.sh screenshot http://localhost:8501 \
+  docs/verification-output/{plan-id}/screenshots/frontend.png
 
 # Swagger UI showing new endpoints
-./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html docs/screenshots/{plan-id}-swagger.png
+./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html \
+  docs/verification-output/{plan-id}/screenshots/swagger.png
 ```
 
 ### Verification Video
@@ -135,23 +156,36 @@ Produce a short video demonstrating the feature works end-to-end:
 
 1. **Take sequential screenshots** of each verification step (API calls, UI interactions, logs):
    ```bash
-   mkdir -p docs/screenshots/{plan-id}-verification
-   ./scripts/capture.sh screenshot <url-step-1> docs/screenshots/{plan-id}-verification/01-step-name.png
-   ./scripts/capture.sh screenshot <url-step-2> docs/screenshots/{plan-id}-verification/02-step-name.png
+   ./scripts/capture.sh screenshot <url-step-1> \
+     docs/verification-output/{plan-id}/screenshots/01-step-name.png
+   ./scripts/capture.sh screenshot <url-step-2> \
+     docs/verification-output/{plan-id}/screenshots/02-step-name.png
    # ... one per verification step
    ```
 
 2. **Combine into a slideshow video** (3 seconds per screenshot):
    ```bash
-   ./scripts/capture.sh screenshots-to-video docs/screenshots/{plan-id}-verification docs/videos/{plan-id}-verification.mp4
+   mkdir -p docs/verification-output/{plan-id}/videos
+   ./scripts/capture.sh screenshots-to-video \
+     docs/verification-output/{plan-id}/screenshots \
+     docs/verification-output/{plan-id}/videos/{plan-id}-verification.mp4
    ```
 
 3. **Or record the browser** for dynamic UI interactions:
    ```bash
    ./scripts/capture.sh record-browser http://localhost:8501 {plan-id}-demo 15
+   # Move the output into docs/verification-output/{plan-id}/videos/
    ```
 
-The video file path must be included in the verification output file and PR description.
+### Commit the evidence
+
+After all captures are complete, commit the verification output:
+```bash
+git add docs/verification-output/{plan-id}/
+git commit -m "chore({plan-id}): add verification screenshots and video"
+```
+
+The video and screenshot paths must be included in the verification output file and PR description.
 
 ## Key Rules
 

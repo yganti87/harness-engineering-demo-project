@@ -99,16 +99,36 @@ cd frontend && python -m pytest tests/ -v
 
 ## Screenshots & Video Evidence
 
-After verification passes, produce visual evidence of the task result:
+After verification passes, produce visual evidence of the task result and **commit it**
+so there is a permanent record on GitHub.
+
+### Output directory
+
+All capture artifacts go under `docs/verification-output/{task-id}/`:
+
+```
+docs/verification-output/{task-id}/
+  screenshots/
+    frontend.png
+    swagger.png
+    01-step-name.png
+    ...
+  videos/
+    {task-id}-verification.mp4
+```
 
 ### Screenshots
-Take screenshots of any UI or API changes using the capture script:
+Take screenshots of any UI or API changes:
 ```bash
+mkdir -p docs/verification-output/{task-id}/screenshots
+
 # Frontend page affected by the task
-./scripts/capture.sh screenshot http://localhost:8501 docs/screenshots/{task-id}-frontend.png
+./scripts/capture.sh screenshot http://localhost:8501 \
+  docs/verification-output/{task-id}/screenshots/frontend.png
 
 # Swagger UI if API changed
-./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html docs/screenshots/{task-id}-swagger.png
+./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html \
+  docs/verification-output/{task-id}/screenshots/swagger.png
 ```
 
 ### Verification Video
@@ -116,22 +136,35 @@ For tasks that touch UI or API endpoints, produce a short verification video:
 
 1. **Take sequential screenshots** of each verification step:
    ```bash
-   mkdir -p docs/screenshots/{task-id}-verification
-   ./scripts/capture.sh screenshot <url-step-1> docs/screenshots/{task-id}-verification/01-step-name.png
-   ./scripts/capture.sh screenshot <url-step-2> docs/screenshots/{task-id}-verification/02-step-name.png
+   ./scripts/capture.sh screenshot <url-step-1> \
+     docs/verification-output/{task-id}/screenshots/01-step-name.png
+   ./scripts/capture.sh screenshot <url-step-2> \
+     docs/verification-output/{task-id}/screenshots/02-step-name.png
    ```
 
 2. **Combine into a slideshow video**:
    ```bash
-   ./scripts/capture.sh screenshots-to-video docs/screenshots/{task-id}-verification docs/videos/{task-id}-verification.mp4
+   mkdir -p docs/verification-output/{task-id}/videos
+   ./scripts/capture.sh screenshots-to-video \
+     docs/verification-output/{task-id}/screenshots \
+     docs/verification-output/{task-id}/videos/{task-id}-verification.mp4
    ```
 
 3. **Or record the browser** for dynamic interactions:
    ```bash
    ./scripts/capture.sh record-browser http://localhost:8501 {task-id}-demo 15
+   # Move the output into docs/verification-output/{task-id}/videos/
    ```
 
-Include the video file path in the verification output and PR description.
+### Commit the evidence
+
+After all captures are complete, commit the verification output:
+```bash
+git add docs/verification-output/{task-id}/
+git commit -m "chore({task-id}): add verification screenshots and video"
+```
+
+Include the video and screenshot paths in the verification output and PR description.
 Skip video for config-only or docs-only tasks where there is nothing visual to capture.
 
 ## Key Rules
