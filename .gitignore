@@ -3,6 +3,9 @@
 !.env.example
 .codespace.env
 
+# Claude Code local settings (user-specific)
+.ai/settings.local.json
+
 # Logs (host-mounted from containers)
 logs/
 
