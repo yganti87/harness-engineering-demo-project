@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-03-12",
+  "lastUpdated": "2026-03-18",
   "features": [
     {
       "id": "F001",
@@ -207,6 +207,40 @@
       "implementedFiles": [
         "frontend/app.py"
       ]
+    },
+    {
+      "id": "F007",
+      "name": "Email-Based Authentication with Email Verification",
+      "status": "planned",
+      "priority": "high",
+      "description": "Replace username-based auth with email-based auth. Users must verify their email via a time-limited link before they can log in. Local SMTP via Mailpit; production-ready via environment variables. Database is stateless between container restarts.",
+      "acceptanceCriteria": [
+        "POST /api/v1/auth/register accepts email, password, confirmPassword (not username)",
+        "Registration validates email format (@Email) and password (min 8 chars, confirm match)",
+        "Registration sends a verification email via SMTP with a time-limited link (default 15 min)",
+        "Registration returns 201 with user id, email, emailVerified=false",
+        "Registration returns 409 if email already registered",
+        "POST /api/v1/auth/login accepts email and password (not username)",
+        "Login returns 200 with JWT token and user info for verified users only",
+        "Login returns 403 with clear message if email is not verified",
+        "Login returns 401 on invalid email or password",
+        "GET /api/v1/auth/verify?token={token} activates the account and returns HTML success page",
+        "Expired or invalid verification tokens return an HTML error page",
+        "POST /api/v1/auth/resend-verification sends a new verification email (rate limited: 1 per 60s)",
+        "Resend endpoint always returns 200 regardless of email existence (prevents enumeration)",
+        "Verification emails are viewable in Mailpit web UI at http://localhost:8025",
+        "Database does NOT persist data across docker compose down/up (stateless via tmpfs)",
+        "All SMTP settings are environment-variable driven (MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_SMTP_AUTH, MAIL_STARTTLS_ENABLED, MAIL_FROM_ADDRESS)",
+        "All responses use ApiResponse envelope (except GET /verify which returns HTML)",
+        "Streamlit UI shows Email fields (not Username) for registration and login",
+        "Post-registration shows 'Check your email' view with resend button",
+        "Login 403 error shows 'Email not verified' message with resend button",
+        "All auth-related actions are logged at appropriate levels (INFO for successful operations, WARN for verification failures, ERROR for email send failures)",
+        "All existing architecture tests continue to pass",
+        "start.sh prints Mailpit URL in success banner"
+      ],
+      "testSteps": [],
+      "implementedFiles": []
     }
   ]
 }
