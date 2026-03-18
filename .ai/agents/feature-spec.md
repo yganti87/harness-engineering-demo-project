@@ -56,6 +56,48 @@ Do not guess or assume. If critical details are missing, ask before drafting.
 
 Create a feature branch for the work: `feature/NNN-feature-slug` (e.g. `feature/002-book-detail`). Use the feature number and a kebab-case slug derived from the feature name.
 
+## Exec Plan Verification Section
+
+Every exec plan must include a **Test Plan (Manual Verification)** section. Tailor it to the feature scope:
+
+### Features with UI changes (frontend or HTML endpoints)
+
+Include a **Visual Verification** table listing numbered screenshots that walk through the user-visible flow end-to-end. Each row has:
+- Screenshot filename (e.g. `01-login-page.png`)
+- Action the verifier takes (e.g. "Open http://localhost:8501")
+- Expected result (what should be visible on screen)
+
+End the visual section with the `screenshots-to-video` command so the spec-exec agent generates a slideshow video.
+
+Example:
+```markdown
+### Visual Verification (screenshots + video)
+
+| # | Screenshot | Action | Expected |
+|---|-----------|--------|----------|
+| 01 | `01-page-name.png` | Open URL or perform action | What should appear |
+| 02 | `02-next-step.png` | Next action | Next expected state |
+
+After capturing, combine into video:
+\`\`\`bash
+./scripts/capture.sh screenshots-to-video \
+  docs/verification-output/{plan-id}/screenshots \
+  docs/verification-output/{plan-id}/videos/{plan-id}-verification.mp4
+\`\`\`
+```
+
+### Backend-only features (no UI changes)
+
+Include an **API Verification** section with numbered curl/CLI commands, each with expected HTTP status and response shape. Also include checks for:
+- Prometheus metrics (`curl localhost:8080/actuator/prometheus | grep <metric>`)
+- Health endpoint (if new health indicators were added)
+- Log output (structured log fields)
+- Swagger UI screenshot showing new endpoints
+
+Even without frontend changes, always capture at least:
+- A Swagger screenshot showing the new/changed endpoints
+- The verification text output (`docs/verification-output/{plan-id}-verification.txt`)
+
 ## Workflow
 
 1. If the request is unclear, **ask the user for clarification** first
@@ -64,5 +106,6 @@ Create a feature branch for the work: `feature/NNN-feature-slug` (e.g. `feature/
 4. Add or update the feature in `features.json` with id, acceptanceCriteria
 5. Link the spec to the feature ID in the spec header
 6. **Create and checkout feature branch**: `git checkout -b feature/NNN-feature-slug`
-7. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
-8. **Present the plan to the user and wait for explicit approval** before implementation
+7. Draft exec plan with **explicit verification steps** (see Exec Plan Verification Section above)
+8. Update [docs/PLANS.md](../docs/PLANS.md) if adding a new execution plan
+9. **Present the plan to the user and wait for explicit approval** before implementation

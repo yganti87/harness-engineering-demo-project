@@ -211,7 +211,7 @@
     {
       "id": "F007",
       "name": "Email-Based Authentication with Email Verification",
-      "status": "planned",
+      "status": "in_progress",
       "priority": "high",
       "description": "Replace username-based auth with email-based auth. Users must verify their email via a time-limited link before they can log in. Local SMTP via Mailpit; production-ready via environment variables. Database is stateless between container restarts.",
       "acceptanceCriteria": [

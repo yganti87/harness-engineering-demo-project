@@ -1,0 +1,34 @@
+# Test Summary — 007-email-verification
+
+## Unit Tests (run: 2026-03-18)
+- Command: cd backend && mvn test -Dexcluded.groups=integration
+- Result: BUILD SUCCESS
+- Tests run: 46, Failures: 0, Errors: 0, Skipped: 0
+  - ApiResponseTest: 4 passed
+  - BookSearchRequestValidationTest: 6 passed
+  - PagedResponseTest: 3 passed
+  - EmailMaskUtilTest: 6 passed (new)
+  - BookServiceTest: 5 passed
+  - AuthServiceTest: 14 passed (rewritten for email-based auth)
+  - EmailServiceTest: 3 passed (new)
+  - LayerDependencyTest (ArchUnit): 5 passed
+
+## Checkstyle
+- Command: cd backend && mvn checkstyle:check
+- Result: BUILD SUCCESS — 0 violations
+
+## Integration Tests (run: 2026-03-18)
+- Command: cd backend && mvn verify -Dgroups=integration
+- Result: BUILD SUCCESS
+- Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+  - AuthIntegrationTest: 9 passed (rewritten for email-based auth with verification)
+  - BookSearchIntegrationTest: 7 passed (unchanged)
+
+## Frontend Tests (run: 2026-03-18)
+- Command: cd frontend && python3 -m pytest tests/ -v
+- Result: 13 passed in 0.19s
+  - TestSearchApiHelper: 3 passed
+  - TestRegisterApiHelper: 4 passed (updated to email-based)
+  - TestLoginApiHelper: 3 passed (updated to email-based)
+  - TestResendVerificationApiHelper: 2 passed (new)
+  - TestGenreOptions: 1 passed

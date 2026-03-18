@@ -22,7 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(JwtConfig.class)
+@EnableConfigurationProperties({JwtConfig.class, VerificationConfig.class, MailProperties.class})
 public class SecurityConfig {
 
     @Bean

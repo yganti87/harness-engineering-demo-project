@@ -6,27 +6,25 @@ import java.util.UUID;
 /**
  * Service for generating and validating JWT tokens.
  *
- * <p>Tokens contain userId and username. Client sends token in
+ * <p>Tokens contain userId and email. Client sends token in
  * Authorization: Bearer &lt;token&gt; header.
- *
- * <p>See design-docs/002-session-strategy.md.
  */
 public interface JwtService {
 
     /**
      * Generates a signed JWT for the given user.
      *
-     * @param userId   user ID
-     * @param username username
+     * @param userId user ID
+     * @param email  user email
      * @return signed JWT string
      */
-    String generate(UUID userId, String username);
+    String generate(UUID userId, String email);
 
     /**
      * Validates the JWT and extracts user info.
      *
      * @param token the JWT string
-     * @return UserDto with id and username, or null if invalid/expired
+     * @return UserDto with id and email, or null if invalid/expired
      */
     UserDto validate(String token);
 }

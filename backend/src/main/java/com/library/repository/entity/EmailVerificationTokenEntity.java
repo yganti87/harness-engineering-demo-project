@@ -14,52 +14,44 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 /**
- * JPA entity representing a user account.
+ * JPA entity for email verification tokens.
  *
- * <p>Schema managed by Flyway migrations V2 + V3.
- * Passwords stored as BCrypt hashes (never plain text).
+ * <p>Schema managed by Flyway migration V3__add_email_verification.sql.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "email_verification_tokens")
 @Getter
 @Setter
-@ToString(exclude = "passwordHash")
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
+public class EmailVerificationTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
+    @Column(name = "token", nullable = false, unique = true, length = 255)
+    private String token;
 
-    @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified;
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Instant updatedAt;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof UserEntity other)) {
+        if (!(o instanceof EmailVerificationTokenEntity other)) {
             return false;
         }
         return id != null && id.equals(other.id);

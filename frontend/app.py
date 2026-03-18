@@ -24,6 +24,7 @@ API_SEARCH_ENDPOINT = f"{BACKEND_URL}/api/v1/books/search"
 API_BOOK_ENDPOINT = f"{BACKEND_URL}/api/v1/books"
 API_REGISTER_ENDPOINT = f"{BACKEND_URL}/api/v1/auth/register"
 API_LOGIN_ENDPOINT = f"{BACKEND_URL}/api/v1/auth/login"
+API_RESEND_VERIFICATION_ENDPOINT = f"{BACKEND_URL}/api/v1/auth/resend-verification"
 LOG_DIR = os.environ.get("LOG_DIR", "/var/log/app")
 REQUEST_TIMEOUT_SECONDS = 10
 PAGE_SIZE = 20
@@ -130,24 +131,24 @@ def search_books(query: str, genre: str, page: int, size: int) -> Optional[dict]
         return None
 
 
-def register_user(username: str, password: str, confirm_password: str) -> Optional[dict]:
+def register_user(email: str, password: str, confirm_password: str) -> Optional[dict]:
     """
     Register a new user via the backend API.
 
-    Returns the unwrapped 'data' dict (user with id, username) on success.
+    Returns the unwrapped 'data' dict (user with id, email, emailVerified) on success.
     Returns None and calls st.error() on failure.
     """
     if password != confirm_password:
         st.error("Password and confirm password do not match.")
         return None
 
-    logger.info("Registering user username='%s'", username)
+    logger.info("Registering user email='%s'", email)
 
     try:
         response = requests.post(
             API_REGISTER_ENDPOINT,
             json={
-                "username": username,
+                "email": email,
                 "password": password,
                 "confirmPassword": confirm_password,
             },
@@ -155,7 +156,7 @@ def register_user(username: str, password: str, confirm_password: str) -> Option
         )
         response.raise_for_status()
         envelope = response.json()
-        logger.info("Registration successful username='%s'", username)
+        logger.info("Registration successful email='%s'", email)
         return envelope.get("data")
     except requests.exceptions.ConnectionError:
         logger.error("Connection refused url=%s", BACKEND_URL)
@@ -182,25 +183,26 @@ def register_user(username: str, password: str, confirm_password: str) -> Option
         return None
 
 
-def login_user(username: str, password: str) -> Optional[dict]:
+def login_user(email: str, password: str) -> Optional[dict]:
     """
     Log in via the backend API.
 
-    Returns the unwrapped 'data' dict (userId, username, token) on success.
+    Returns the unwrapped 'data' dict (userId, email, token) on success.
+    Sets st_email_not_verified=True if login fails with 403 (unverified email).
     Returns None and calls st.error() on failure.
     """
-    logger.info("Logging in username='%s'", username)
+    logger.info("Logging in email='%s'", email)
 
     try:
         response = requests.post(
             API_LOGIN_ENDPOINT,
-            json={"username": username, "password": password},
+            json={"email": email, "password": password},
             timeout=REQUEST_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
         envelope = response.json()
         data = envelope.get("data")
-        logger.info("Login successful username='%s'", username)
+        logger.info("Login successful email='%s'", email)
         return data
     except requests.exceptions.ConnectionError:
         logger.error("Connection refused url=%s", BACKEND_URL)
@@ -210,11 +212,16 @@ def login_user(username: str, password: str) -> Optional[dict]:
         )
         return None
     except requests.exceptions.HTTPError as exc:
+        if exc.response.status_code == 403:
+            st.session_state.st_email_not_verified = True
+            st.session_state.st_pending_verification_email = email
+            logger.warning("Login blocked: email not verified email='%s'", email)
+            return None
         try:
             envelope = exc.response.json()
-            error_message = envelope.get("error", "Invalid username or password")
+            error_message = envelope.get("error", "Invalid email or password")
         except Exception:
-            error_message = "Invalid username or password"
+            error_message = "Invalid email or password"
         logger.warning(
             "Login HTTP error status=%d message=%s",
             exc.response.status_code, error_message
@@ -225,6 +232,48 @@ def login_user(username: str, password: str) -> Optional[dict]:
         logger.exception("Unexpected error during login")
         st.error(f"An unexpected error occurred: {exc}")
         return None
+
+
+def resend_verification(email: str) -> bool:
+    """
+    Resend verification email via the backend API.
+
+    Returns True on success (200), False on failure.
+    """
+    logger.info("Resending verification email='%s'", email)
+
+    try:
+        response = requests.post(
+            API_RESEND_VERIFICATION_ENDPOINT,
+            json={"email": email},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        logger.info("Resend verification requested email='%s'", email)
+        return True
+    except requests.exceptions.ConnectionError:
+        logger.error("Connection refused url=%s", BACKEND_URL)
+        st.error(
+            f"Cannot connect to the backend at `{BACKEND_URL}`. "
+            "Is it running? Try: `./scripts/start.sh`"
+        )
+        return False
+    except requests.exceptions.HTTPError as exc:
+        try:
+            envelope = exc.response.json()
+            error_message = envelope.get("error", str(exc))
+        except Exception:
+            error_message = str(exc)
+        logger.warning(
+            "Resend verification HTTP error status=%d message=%s",
+            exc.response.status_code, error_message
+        )
+        st.error(error_message)
+        return False
+    except Exception as exc:
+        logger.exception("Unexpected error during resend verification")
+        st.error(f"An unexpected error occurred: {exc}")
+        return False
 
 
 def render_book_card(book: dict) -> None:
@@ -293,10 +342,27 @@ def render_landing_page() -> None:
 
         with login_tab:
             st.markdown("##### Welcome back")
+
+            if st.session_state.st_email_not_verified:
+                pending_email = st.session_state.st_pending_verification_email or ""
+                st.warning(
+                    "Your email is not yet verified. "
+                    "Please check your inbox for the verification link."
+                )
+                if st.button(
+                    "Resend Verification Email",
+                    key="btn_resend_from_login",
+                    use_container_width=True,
+                ):
+                    if pending_email and resend_verification(pending_email):
+                        st.success("Verification email resent! Check your inbox.")
+                        st.session_state.st_email_not_verified = False
+                    st.rerun()
+
             with st.form(key="login_form"):
-                login_username = st.text_input(
-                    "Username",
-                    key="login_username",
+                login_email = st.text_input(
+                    "Email",
+                    key="login_email",
                 )
                 login_password = st.text_input(
                     "Password",
@@ -304,31 +370,43 @@ def render_landing_page() -> None:
                     key="login_password",
                 )
                 if st.form_submit_button("Log In", use_container_width=True):
-                    if login_username and login_password:
-                        data = login_user(login_username, login_password)
+                    st.session_state.st_email_not_verified = False
+                    if login_email and login_password:
+                        data = login_user(login_email, login_password)
                         if data:
                             st.session_state.st_user = {
                                 "id": data.get("userId"),
-                                "username": data.get("username"),
+                                "email": data.get("email"),
                             }
                             st.session_state.st_token = data.get("token")
                             st.rerun()
 
         with register_tab:
-            if st.session_state.st_registration_success:
+            if st.session_state.st_pending_verification_email and \
+                    not st.session_state.st_email_not_verified:
+                pending_email = st.session_state.st_pending_verification_email
                 st.success("Account Created!")
-                st.markdown("Your account has been created successfully.")
+                st.markdown(
+                    f"A verification email has been sent to **{pending_email}**. "
+                    "Please click the link in the email to verify your account before logging in."
+                )
+                if st.button(
+                    "Resend Verification Email",
+                    key="btn_resend_after_register",
+                    use_container_width=True,
+                ):
+                    resend_verification(pending_email)
+                    st.success("Verification email resent!")
                 if st.button("Go to Log In", use_container_width=True):
-                    st.session_state.st_registration_success = False
+                    st.session_state.st_pending_verification_email = None
                     st.rerun()
             else:
                 st.markdown("##### Create your account")
                 with st.form(key="register_form"):
-                    reg_username = st.text_input(
-                        "Username",
-                        max_chars=50,
-                        placeholder="3–50 chars, letters, numbers, underscore",
-                        key="reg_username",
+                    reg_email = st.text_input(
+                        "Email",
+                        placeholder="you@example.com",
+                        key="reg_email",
                     )
                     reg_password = st.text_input(
                         "Password",
@@ -342,10 +420,10 @@ def render_landing_page() -> None:
                         key="reg_confirm",
                     )
                     if st.form_submit_button("Create Account", use_container_width=True):
-                        if reg_username and reg_password and reg_confirm:
-                            data = register_user(reg_username, reg_password, reg_confirm)
+                        if reg_email and reg_password and reg_confirm:
+                            data = register_user(reg_email, reg_password, reg_confirm)
                             if data:
-                                st.session_state.st_registration_success = True
+                                st.session_state.st_pending_verification_email = reg_email
                                 st.rerun()
 
     _, footer_col, _ = st.columns([1, 2, 1])
@@ -361,7 +439,7 @@ def render_catalog() -> None:
         st.title("📚 Library Catalog")
     with header_col_auth:
         user = st.session_state.st_user
-        st.markdown(f"**Welcome, {user.get('username', 'User')}**")
+        st.markdown(f"**Welcome, {user.get('email', 'User')}**")
         if st.button("Logout", key="btn_logout"):
             st.session_state.st_user = None
             st.session_state.st_token = None
@@ -465,8 +543,10 @@ if "st_user" not in st.session_state:
     st.session_state.st_user = None
 if "st_token" not in st.session_state:
     st.session_state.st_token = None
-if "st_registration_success" not in st.session_state:
-    st.session_state.st_registration_success = False
+if "st_pending_verification_email" not in st.session_state:
+    st.session_state.st_pending_verification_email = None
+if "st_email_not_verified" not in st.session_state:
+    st.session_state.st_email_not_verified = False
 
 # ── Main rendering: gate on authentication ─────────────────────────────────────
 if st.session_state.st_user is None:

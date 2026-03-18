@@ -64,15 +64,21 @@ See [docs/exec-plans/active/001-library-search.md](../docs/exec-plans/active/001
    - **Analyze output**: Parse raw output per the test-runner skills. Success = Failures: 0, Errors: 0; no `<<< FAILURE!` or `<<< ERROR!`.
    - **Write test summary**: Write to `docs/exec-plans/test-output/{plan-id}-test-summary.txt` after each run.
    - **If any step fails**: Diagnose → Fix → Re-run that step (and any downstream steps) → Repeat until all pass or escalation (see Test Failure Diagnosis & Escalation).
-6. **Verify with Docker** (before marking complete):
+6. **Verify with Docker** (MANDATORY — do not skip):
    - Start services: `./scripts/start.sh`
    - Wait for backend to be ready (health check)
    - Run integration tests: `cd backend && mvn test -Dgroups=integration`
-   - Run all verification commands from the plan's Test Plan / Phase 5 (API, UI, Prometheus, Grafana, etc.)
-   - **Write verification output**: Capture the output of all verification commands (curl, API responses, Prometheus query results, container status) to `docs/verification-output/{plan-id}-verification.txt`. Create `docs/verification-output/` if it does not exist. Include:
+   - **Execute EVERY verification step** from the exec plan's Test Plan section. The plan is the source of truth for what to verify. This includes:
+     - **API Verification**: Run all curl/CLI commands listed in the plan. Capture each command and its output.
+     - **Visual Verification** (if the plan has a Visual Verification table): Execute each numbered screenshot step using Playwright (preferred for interactive flows) or `./scripts/capture.sh screenshot`. For UI flows that require user interaction (filling forms, clicking buttons, navigating between pages), use a Playwright script to automate the full sequence. Each row in the plan's table = one screenshot file.
+     - **Video**: After all screenshots are captured, run `./scripts/capture.sh screenshots-to-video` as specified in the plan.
+   - **Write verification output**: Capture all results to `docs/verification-output/{plan-id}-verification.txt`. Include:
      - Timestamp and plan ID
-     - Each verification command run and its output (or exit code)
+     - Each verification command/screenshot and its result
      - Summary: PASS or FAIL per criterion
+   - **If the plan has no Visual Verification section** (backend-only features), still capture at minimum:
+     - A Swagger UI screenshot showing new/changed endpoints
+     - The verification text output
 7. Update exec plan checkboxes `- [x]` as steps complete
 8. Update features.json `implementedFiles` and `status` when done
 9. Move completed plan to `docs/exec-plans/completed/` and update docs/PLANS.md
@@ -119,8 +125,8 @@ The exec plan file is the plan of record. After user approval of an updated plan
 
 ## Screenshots & Video Evidence
 
-After verification passes, produce visual evidence of the feature working and **commit it**
-so there is a permanent record on GitHub.
+**This is part of verification, not a separate optional step.** Screenshots and video must be
+produced during step 6 of the workflow. Do not mark the feature complete without them.
 
 ### Output directory
 
@@ -129,8 +135,6 @@ All capture artifacts go under `docs/verification-output/{plan-id}/`:
 ```
 docs/verification-output/{plan-id}/
   screenshots/
-    frontend.png
-    swagger.png
     01-step-name.png
     02-step-name.png
     ...
@@ -138,45 +142,42 @@ docs/verification-output/{plan-id}/
     {plan-id}-verification.mp4
 ```
 
-### Screenshots
-Take screenshots of all relevant UI pages and API responses:
-```bash
-mkdir -p docs/verification-output/{plan-id}/screenshots
+### How to capture screenshots
 
-# Frontend pages
-./scripts/capture.sh screenshot http://localhost:8501 \
-  docs/verification-output/{plan-id}/screenshots/frontend.png
+**If the exec plan has a Visual Verification table**, follow it exactly — one screenshot per row,
+using the filenames specified in the table.
 
-# Swagger UI showing new endpoints
-./scripts/capture.sh screenshot http://localhost:8080/swagger-ui.html \
-  docs/verification-output/{plan-id}/screenshots/swagger.png
+**For UI flows requiring interaction** (filling forms, clicking buttons, navigating):
+Use a Playwright Python script to automate the full sequence. This is more reliable than
+`./scripts/capture.sh screenshot` for interactive flows because it can fill inputs, click
+buttons, and wait for state changes between captures.
+
+Example Playwright pattern:
+```python
+from playwright.async_api import async_playwright
+async with async_playwright() as p:
+    browser = await p.chromium.launch()
+    page = await browser.new_page(viewport={"width": 1280, "height": 800})
+    await page.goto("http://localhost:8501", wait_until="networkidle")
+    await page.screenshot(path="screenshots/01-initial-page.png")
+    # ... interact, fill forms, click buttons, screenshot each step
 ```
 
+**For static pages** (Swagger, health endpoint, Mailpit inbox without interaction):
+Use `./scripts/capture.sh screenshot <url> <output.png>`.
+
+**For backend-only features** (no Visual Verification table in the plan):
+Capture at minimum a Swagger screenshot showing new/changed endpoints.
+
 ### Verification Video
-Produce a short video demonstrating the feature works end-to-end:
 
-1. **Take sequential screenshots** of each verification step (API calls, UI interactions, logs):
-   ```bash
-   ./scripts/capture.sh screenshot <url-step-1> \
-     docs/verification-output/{plan-id}/screenshots/01-step-name.png
-   ./scripts/capture.sh screenshot <url-step-2> \
-     docs/verification-output/{plan-id}/screenshots/02-step-name.png
-   # ... one per verification step
-   ```
-
-2. **Combine into a slideshow video** (3 seconds per screenshot):
-   ```bash
-   mkdir -p docs/verification-output/{plan-id}/videos
-   ./scripts/capture.sh screenshots-to-video \
-     docs/verification-output/{plan-id}/screenshots \
-     docs/verification-output/{plan-id}/videos/{plan-id}-verification.mp4
-   ```
-
-3. **Or record the browser** for dynamic UI interactions:
-   ```bash
-   ./scripts/capture.sh record-browser http://localhost:8501 {plan-id}-demo 15
-   # Move the output into docs/verification-output/{plan-id}/videos/
-   ```
+After all screenshots are captured, combine into a slideshow:
+```bash
+mkdir -p docs/verification-output/{plan-id}/videos
+./scripts/capture.sh screenshots-to-video \
+  docs/verification-output/{plan-id}/screenshots \
+  docs/verification-output/{plan-id}/videos/{plan-id}-verification.mp4
+```
 
 ### Commit the evidence
 

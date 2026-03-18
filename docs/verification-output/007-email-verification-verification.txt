@@ -1,0 +1,39 @@
+=== F007 Email Verification — Verification Output ===
+Timestamp: 2026-03-18T22:17:00Z
+Plan ID: 007-email-verification
+
+--- Visual Verification Steps (screenshots + video) ---
+
+01-login-page.png         — Frontend login page with Email field (not Username)
+02-create-account-tab.png — Create Account tab selected
+03-form-filled.png        — Registration form filled: demo@example.com + password
+04-registration-success.png — "Account Created!" banner, "check your email" prompt, Resend button
+05-mailpit-inbox.png      — Mailpit inbox: 1 email from noreply@library.local to demo@example.com
+06-email-content.png      — Email opened: "Verify your email address", "Verify Email" link, 15-min expiry
+07-email-verified.png     — "Email Verified!" HTML page with "Go to Library" link
+08-login-filled.png       — Login form filled with demo@example.com
+09-logged-in-catalog.png  — Catalog page: "Welcome, demo@example.com", 10 books visible
+10-swagger-endpoints.png  — Swagger: /login, /register, /resend-verification, /verify endpoints
+
+Video: docs/verification-output/007-email-verification/videos/007-email-verification-verification.mp4
+  11 screenshots, ~33s slideshow
+
+--- API Verification (from prior run, all PASS) ---
+
+Step 1: Mailpit running                              PASS (HTTP 200)
+Step 2: Register demo@example.com                    PASS (HTTP 201, emailVerified=false)
+Step 3: Login before verification                    PASS (HTTP 403, "Email not verified")
+Step 4: Verification email in Mailpit                PASS (1 message, subject "Verify your Library account")
+Step 5: Verify email via token                       PASS (HTTP 200, "Email Verified!" HTML)
+Step 6: Login after verification                     PASS (HTTP 200, JWT token returned)
+Step 7: Duplicate registration                       PASS (HTTP 409, "Email already registered")
+Step 8: Resend verification                          PASS (HTTP 200, generic message)
+Step 9: Invalid token verification                   PASS (HTTP 200, "Invalid Link" HTML)
+Step 10: Prometheus metrics                          PASS (auth_registration_total, auth_login_total, etc.)
+Step 11: Health endpoint                             PASS (mail health indicator: UP)
+Step 12: Wrong password login                        PASS (HTTP 401)
+Step 13: Nonexistent email login                     PASS (HTTP 401)
+
+=== ALL 13 API CHECKS PASSED ===
+=== ALL 10 VISUAL CHECKS PASSED ===
+=== VERIFICATION COMPLETE ===

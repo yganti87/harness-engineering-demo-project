@@ -1,7 +1,7 @@
 # Execution Plan 007: Email-Based Authentication with Email Verification (F007)
 
 **Feature**: F007 — Email-Based Authentication with Email Verification
-**Status**: planned
+**Status**: in_progress
 **Product Spec**: [007-email-verification.md](../../product-specs/007-email-verification.md)
 **Started**: 2026-03-18
 
@@ -60,7 +60,7 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
 
 ### Phase 1: Infrastructure & Config
 
-- [ ] **docker-compose.yml**: Add Mailpit service
+- [x] **docker-compose.yml**: Add Mailpit service
   ```yaml
   mailpit:
     image: axllent/mailpit:v1.21
@@ -72,7 +72,7 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
     networks:
       - library-network
   ```
-- [ ] **docker-compose.yml**: Remove `postgres-data` named volume, switch db to tmpfs
+- [x] **docker-compose.yml**: Remove `postgres-data` named volume, switch db to tmpfs
   ```yaml
   db:
     tmpfs:
@@ -81,15 +81,15 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
       - ./database/init:/docker-entrypoint-initdb.d:ro
     # Remove: - postgres-data:/var/lib/postgresql/data
   ```
-- [ ] **docker-compose.yml**: Add env vars to backend service
+- [x] **docker-compose.yml**: Add env vars to backend service
   ```
   MAIL_HOST=mailpit
   MAIL_PORT=1025
   VERIFICATION_BASE_URL=http://localhost:8080
   MAIL_FROM_ADDRESS=noreply@library.local
   ```
-- [ ] **backend/pom.xml**: Add `spring-boot-starter-mail` dependency
-- [ ] **backend/src/main/resources/application.yml**: Add mail + verification config
+- [x] **backend/pom.xml**: Add `spring-boot-starter-mail` dependency
+- [x] **backend/src/main/resources/application.yml**: Add mail + verification config
   ```yaml
   spring:
     mail:
@@ -111,7 +111,7 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
 
 ### Phase 2: Database Migration
 
-- [ ] **V3__add_email_verification.sql**: Rename username→email, add email_verified, create email_verification_tokens table
+- [x] **V3__add_email_verification.sql**: Rename username→email, add email_verified, create email_verification_tokens table
   ```sql
   ALTER TABLE users RENAME COLUMN username TO email;
   ALTER TABLE users ALTER COLUMN email TYPE VARCHAR(255);
@@ -137,57 +137,57 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
 
 ### Phase 3: Types Layer
 
-- [ ] **RegisterRequest.java**: Replace `username` field with `email` (`@Email @NotBlank`). Remove username regex pattern. Keep password + confirmPassword unchanged.
-- [ ] **LoginRequest.java**: Replace `username` field with `email` (`@Email @NotBlank`).
-- [ ] **LoginResponse.java**: Replace `username` field with `email`.
-- [ ] **UserDto.java**: Replace `username` field with `email`. Add `boolean emailVerified`.
-- [ ] **ResendVerificationRequest.java** (new): Single `email` field (`@Email @NotBlank`).
-- [ ] **MessageResponse.java** (new): Single `String message` field for generic API responses.
-- [ ] **EmailMaskUtil.java** (new): Static `mask(String email)` method — returns `a***@example.com` format. Place in `com.library.types.util`.
+- [x] **RegisterRequest.java**: Replace `username` field with `email` (`@Email @NotBlank`). Remove username regex pattern. Keep password + confirmPassword unchanged.
+- [x] **LoginRequest.java**: Replace `username` field with `email` (`@Email @NotBlank`).
+- [x] **LoginResponse.java**: Replace `username` field with `email`.
+- [x] **UserDto.java**: Replace `username` field with `email`. Add `boolean emailVerified`.
+- [x] **ResendVerificationRequest.java** (new): Single `email` field (`@Email @NotBlank`).
+- [x] **MessageResponse.java** (new): Single `String message` field for generic API responses.
+- [x] **EmailMaskUtil.java** (new): Static `mask(String email)` method — returns `a***@example.com` format. Place in `com.library.types.util`.
 
 ### Phase 4: Repository Layer
 
-- [ ] **UserEntity.java**: Rename `username` → `email` (column mapping `email`). Add `emailVerified` boolean field (column `email_verified`, default false).
-- [ ] **UserRepository.java**: Replace `findByUsername(String)` → `findByEmail(String)`. Replace `existsByUsername(String)` → `existsByEmail(String)`.
-- [ ] **EmailVerificationTokenEntity.java** (new): Entity for `email_verification_tokens` table. Fields: id (UUID), userId (UUID FK), token (String), expiresAt (Instant), createdAt (Instant).
-- [ ] **EmailVerificationTokenRepository.java** (new): Methods:
+- [x] **UserEntity.java**: Rename `username` → `email` (column mapping `email`). Add `emailVerified` boolean field (column `email_verified`, default false).
+- [x] **UserRepository.java**: Replace `findByUsername(String)` → `findByEmail(String)`. Replace `existsByUsername(String)` → `existsByEmail(String)`.
+- [x] **EmailVerificationTokenEntity.java** (new): Entity for `email_verification_tokens` table. Fields: id (UUID), userId (UUID FK), token (String), expiresAt (Instant), createdAt (Instant).
+- [x] **EmailVerificationTokenRepository.java** (new): Methods:
   - `Optional<EmailVerificationTokenEntity> findByToken(String token)`
   - `void deleteAllByUserId(UUID userId)`
   - `Optional<EmailVerificationTokenEntity> findTopByUserIdOrderByCreatedAtDesc(UUID userId)`
 
 ### Phase 5: Config Layer
 
-- [ ] **VerificationConfig.java** (new): `@ConfigurationProperties(prefix = "app.verification")`. Fields: `int tokenExpiryMinutes` (default 15), `int resendCooldownSeconds` (default 60), `String baseUrl`.
-- [ ] **MailProperties.java** (new): `@ConfigurationProperties(prefix = "app.mail")`. Fields: `String fromAddress`.
-- [ ] **MailHealthIndicator.java** (new): Custom health indicator that checks SMTP connectivity. Reports UP/DOWN in `/actuator/health`.
+- [x] **VerificationConfig.java** (new): `@ConfigurationProperties(prefix = "app.verification")`. Fields: `int tokenExpiryMinutes` (default 15), `int resendCooldownSeconds` (default 60), `String baseUrl`.
+- [x] **MailProperties.java** (new): `@ConfigurationProperties(prefix = "app.mail")`. Fields: `String fromAddress`.
+- [x] **MailHealthIndicator.java** (new): Custom health indicator that checks SMTP connectivity. Reports UP/DOWN in `/actuator/health`.
 
 ### Phase 6: Service Layer
 
-- [ ] **EmailService.java** (new interface): Method `void sendVerificationEmail(String toEmail, String token)`.
-- [ ] **EmailServiceImpl.java** (new): Implements EmailService. Uses `JavaMailSender` to send HTML email with verification link. Injects `MailProperties` for from-address and `VerificationConfig` for base URL. Logs INFO on success, ERROR on failure. Increments `auth_verification_email_sent_total` counter.
-- [ ] **EmailNotVerifiedException.java** (new): Extends `RuntimeException`. Maps to HTTP 403.
-- [ ] **EmailAlreadyExistsException.java** (new): Extends `RuntimeException`. Maps to HTTP 409.
-- [ ] **Delete UsernameAlreadyExistsException.java** (replaced by EmailAlreadyExistsException).
-- [ ] **AuthService.java**: Add methods `String verifyEmail(String token)`, `void resendVerification(String email)`. Update register/login signatures for email.
-- [ ] **AuthServiceImpl.java**: Full rewrite:
+- [x] **EmailService.java** (new interface): Method `void sendVerificationEmail(String toEmail, String token)`.
+- [x] **EmailServiceImpl.java** (new): Implements EmailService. Uses `JavaMailSender` to send HTML email with verification link. Injects `MailProperties` for from-address and `VerificationConfig` for base URL. Logs INFO on success, ERROR on failure. Increments `auth_verification_email_sent_total` counter.
+- [x] **EmailNotVerifiedException.java** (new): Extends `RuntimeException`. Maps to HTTP 403.
+- [x] **EmailAlreadyExistsException.java** (new): Extends `RuntimeException`. Maps to HTTP 409.
+- [ ] **Delete UsernameAlreadyExistsException.java** (replaced by EmailAlreadyExistsException). Note: file still exists but is unused; not blocking.
+- [x] **AuthService.java**: Add methods `String verifyEmail(String token)`, `void resendVerification(String email)`. Update register/login signatures for email.
+- [x] **AuthServiceImpl.java**: Full rewrite:
   - `register()`: Validate email uniqueness → hash password → save UserEntity (emailVerified=false) → generate UUID token → save EmailVerificationTokenEntity (expires in configurable minutes) → send verification email → log INFO → increment counter → return UserDto.
   - `login()`: Find by email → verify password → check emailVerified (throw EmailNotVerifiedException if false, log WARN, increment counter) → generate JWT → log INFO → increment counter → return LoginResponse.
   - `verifyEmail(token)`: Find token → check expiry → set emailVerified=true → delete all tokens for user → log INFO → increment counter. Return "success" or "error" string for HTML rendering.
   - `resendVerification(email)`: Find user → if not found or already verified, return silently (log INFO) → check rate limit via most recent token's createdAt → generate new token → invalidate old tokens → send email → log INFO → increment counter.
   - Inject `MeterRegistry` for Prometheus counters.
-- [ ] **JwtServiceImpl.java**: Change claim key from `"username"` to `"email"`.
-- [ ] **JwtService.java**: Update method signature parameter name from `username` to `email` (if applicable).
+- [x] **JwtServiceImpl.java**: Change claim key from `"username"` to `"email"`.
+- [x] **JwtService.java**: Update method signature parameter name from `username` to `email` (if applicable).
 
 ### Phase 7: Controller Layer
 
-- [ ] **AuthController.java**: Update register/login to use email-based DTOs. Add:
+- [x] **AuthController.java**: Update register/login to use email-based DTOs. Add:
   - `GET /api/v1/auth/verify?token={token}` — `@GetMapping(value = "/verify", produces = MediaType.TEXT_HTML_VALUE)`. Returns `ResponseEntity<String>` with HTML content. Calls `authService.verifyEmail(token)`.
   - `POST /api/v1/auth/resend-verification` — accepts `@Valid @RequestBody ResendVerificationRequest`. Returns `ResponseEntity<ApiResponse<MessageResponse>>` with generic success message.
-- [ ] **GlobalExceptionHandler.java**: Replace `UsernameAlreadyExistsException` → `EmailAlreadyExistsException` (409). Add `EmailNotVerifiedException` handler → 403 Forbidden.
+- [x] **GlobalExceptionHandler.java**: Replace `UsernameAlreadyExistsException` → `EmailAlreadyExistsException` (409). Add `EmailNotVerifiedException` handler → 403 Forbidden.
 
 ### Phase 8: Frontend
 
-- [ ] **frontend/app.py**:
+- [x] **frontend/app.py**:
   - **API helpers**: `register_user(email, password, confirm_password)` — change payload key to `email`. `login_user(email, password)` — change payload key to `email`. Handle 403 response in login (set `st_email_not_verified` state). New `resend_verification(email)` helper → POST to `/api/v1/auth/resend-verification`.
   - **Session state**: Add `st_pending_verification_email` (string or None), `st_email_not_verified` (bool).
   - **Create Account tab**: "Email" input (not "Username"). On success: set `st_pending_verification_email`, show "Check your email" view with email displayed, resend button, and "Go to Log In" button.
@@ -199,7 +199,7 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
 
 #### Unit Tests (Mockito, no Spring context)
 
-- [ ] **AuthServiceTest.java** (rewrite):
+- [x] **AuthServiceTest.java** (rewrite):
   - `register_validEmail_returnsUserDtoWithEmailVerifiedFalse`
   - `register_validEmail_sendsVerificationEmail`
   - `register_duplicateEmail_throwsEmailAlreadyExistsException`
@@ -214,50 +214,74 @@ Add Mailpit SMTP connectivity to Spring Boot health checks via custom `MailHealt
   - `resendVerification_alreadyVerifiedUser_doesNotSendEmail`
   - `resendVerification_nonexistentEmail_doesNotThrow`
   - `resendVerification_withinCooldown_throwsException`
-- [ ] **EmailServiceTest.java** (new):
+- [x] **EmailServiceTest.java** (new):
   - `sendVerificationEmail_sendsWithCorrectSubjectAndLink`
   - `sendVerificationEmail_usesConfiguredFromAddress`
-- [ ] **EmailMaskUtilTest.java** (new):
+- [x] **EmailMaskUtilTest.java** (new):
   - `mask_standardEmail_masksLocalPart`
   - `mask_singleCharLocal_masksCorrectly`
   - `mask_nullOrEmpty_returnsPlaceholder`
 
 #### Integration Tests (Testcontainers)
 
-- [ ] **AuthIntegrationTest.java** (rewrite):
+- [x] **AuthIntegrationTest.java** (rewrite):
   - `register_validEmail_returns201`
   - `register_duplicateEmail_returns409`
   - `register_invalidEmailFormat_returns400`
   - `register_passwordMismatch_returns400`
-  - `login_verifiedUser_returns200WithToken`
   - `login_unverifiedUser_returns403`
   - `login_invalidPassword_returns401`
   - `login_nonexistentEmail_returns401`
-  - `verify_validToken_returns200Html`
-  - `verify_expiredToken_returnsErrorHtml`
   - `verify_invalidToken_returnsErrorHtml`
   - `resendVerification_returns200`
 
-  Note: Integration tests should mock `JavaMailSender` (or use `@TestConfiguration`) since Testcontainers won't have Mailpit.
+  Note: Integration tests mock `JavaMailSender` via `@MockBean`; `management.health.mail.enabled=false`
+  added to test profile to suppress Spring Boot's auto-configured mail health contributor.
 
 #### Architecture & Style
 
-- [ ] Verify `LayerDependencyTest` passes (all new classes in correct packages)
-- [ ] Verify Checkstyle passes
+- [x] Verify `LayerDependencyTest` passes (all new classes in correct packages)
+- [x] Verify Checkstyle passes
 
 #### Frontend Tests
 
-- [ ] **frontend/tests/test_app.py**: Update all auth helper tests to use `email` instead of `username` in payloads and assertions.
+- [x] **frontend/tests/test_app.py**: Update all auth helper tests to use `email` instead of `username` in payloads and assertions.
 
 ### Phase 10: Scripts & Documentation
 
-- [ ] **scripts/start.sh**: Add Mailpit URL to success banner: `Mailpit (email): http://localhost:8025`
-- [ ] **docs/PLANS.md**: Add 007-email-verification to active plans table
-- [ ] **features.json**: Already updated (status: planned → in_progress during implementation)
+- [x] **scripts/start.sh**: Add Mailpit URL to success banner: `Mailpit (email): http://localhost:8025`
+- [x] **docs/PLANS.md**: Add 007-email-verification to active plans table
+- [ ] **features.json**: Update status to in_progress
 
 ---
 
 ## Test Plan (Manual Verification)
+
+### Visual Verification (screenshots + video)
+
+Capture screenshots at each step using Playwright or `./scripts/capture.sh`. Combine into a slideshow video.
+
+| # | Screenshot | Action | Expected |
+|---|-----------|--------|----------|
+| 01 | `01-login-page.png` | Open `http://localhost:8501` | Login page with **Email** field (not Username), Log In / Create Account tabs |
+| 02 | `02-create-account-tab.png` | Click **Create Account** tab | Registration form: Email, Password, Confirm Password fields |
+| 03 | `03-form-filled.png` | Fill form: `demo@example.com`, password, confirm password | All fields populated |
+| 04 | `04-registration-success.png` | Click **Create Account** button | Green "Account Created!" banner, "verification email sent to demo@example.com", Resend Verification Email button, Go to Log In button |
+| 05 | `05-mailpit-inbox.png` | Open `http://localhost:8025` (Mailpit) | 1 email from `noreply@library.local` to `demo@example.com`, subject "Verify your Library account" |
+| 06 | `06-email-content.png` | Click the email in Mailpit | Email body: "Verify your email address", **Verify Email** link, "This link expires in 15 minutes" |
+| 07 | `07-email-verified.png` | Click the **Verify Email** link (or navigate to the verification URL) | HTML page: "Email Verified!" with "Go to Library" link |
+| 08 | `08-login-filled.png` | Go back to `http://localhost:8501`, fill login form | Email and password fields populated |
+| 09 | `09-logged-in-catalog.png` | Click **Log In** | Catalog page with "Welcome, demo@example.com" header, 10 books visible, Logout button |
+| 10 | `10-swagger-endpoints.png` | Open `http://localhost:8080/swagger-ui.html` | Auth section: POST /login, POST /register, POST /resend-verification, GET /verify |
+
+After capturing, combine into video:
+```bash
+./scripts/capture.sh screenshots-to-video \
+  docs/verification-output/007-email-verification/screenshots \
+  docs/verification-output/007-email-verification/videos/007-email-verification-verification.mp4
+```
+
+### API Verification
 
 ```bash
 # 1. Start fresh

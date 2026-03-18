@@ -17,19 +17,19 @@ import org.springframework.stereotype.Service;
 /**
  * Implementation of {@link JwtService}.
  *
- * <p>Uses jjwt for HS256 signing.
+ * <p>Uses jjwt for HS256 signing. Tokens carry userId (subject) and email claim.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
-    private static final String CLAIM_USERNAME = "username";
+    private static final String CLAIM_EMAIL = "email";
 
     private final com.library.config.JwtConfig jwtConfig;
 
     @Override
-    public String generate(UUID userId, String username) {
+    public String generate(UUID userId, String email) {
         SecretKey key = Keys.hmacShaKeyFor(
             jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8));
 
@@ -39,7 +39,7 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
             .subject(userId.toString())
-            .claim(CLAIM_USERNAME, username)
+            .claim(CLAIM_EMAIL, email)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(key)
@@ -63,11 +63,11 @@ public class JwtServiceImpl implements JwtService {
                 .getPayload();
 
             UUID userId = UUID.fromString(claims.getSubject());
-            String username = claims.get(CLAIM_USERNAME, String.class);
+            String email = claims.get(CLAIM_EMAIL, String.class);
 
             return UserDto.builder()
                 .id(userId)
-                .username(username)
+                .email(email)
                 .build();
         } catch (ExpiredJwtException e) {
             log.debug("JWT expired");
