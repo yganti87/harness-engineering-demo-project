@@ -60,6 +60,7 @@ See [docs/exec-plans/active/001-library-search.md](../docs/exec-plans/active/001
      - `{plan-id}-unit-raw.txt` — `cd backend && mvn test -Dgroups='!integration'`
      - `{plan-id}-integration-raw.txt` — `cd backend && mvn failsafe:integration-test`
      Create `docs/exec-plans/raw-test-output/` if it does not exist.
+     **Do NOT commit raw test output** — this directory is gitignored. It is for local diagnosis only.
    - **Analyze output**: Parse raw output per the test-runner skills. Success = Failures: 0, Errors: 0; no `<<< FAILURE!` or `<<< ERROR!`.
    - **Write test summary**: Write to `docs/exec-plans/test-output/{plan-id}-test-summary.txt` after each run.
    - **If any step fails**: Diagnose → Fix → Re-run that step (and any downstream steps) → Repeat until all pass or escalation (see Test Failure Diagnosis & Escalation).
@@ -179,10 +180,13 @@ Produce a short video demonstrating the feature works end-to-end:
 
 ### Commit the evidence
 
-After all captures are complete, commit the verification output:
+After all captures are complete, commit **all** verification output — both the
+text summary and the media folder:
+
 ```bash
+git add docs/verification-output/{plan-id}-verification.txt
 git add docs/verification-output/{plan-id}/
-git commit -m "chore({plan-id}): add verification screenshots and video"
+git commit -m "chore({plan-id}): add verification output, screenshots and video"
 ```
 
 The video and screenshot paths must be included in the verification output file and PR description.

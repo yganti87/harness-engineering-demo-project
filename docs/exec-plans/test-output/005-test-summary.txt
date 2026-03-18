@@ -1,0 +1,27 @@
+Plan ID: 005 (F005 Auth-Gated Landing Page)
+Date: 2026-03-13
+Test Runner: pytest 9.0.2 / Python 3.11.4
+
+=== Frontend Tests ===
+Command: cd frontend && python -m pytest tests/ -v
+Result: PASS
+
+Tests collected: 11
+Tests passed: 11
+Tests failed: 0
+Tests errored: 0
+
+Test breakdown:
+  TestSearchApiHelper::test_search_with_keyword_returns_data          PASSED
+  TestSearchApiHelper::test_search_connection_error_returns_none      PASSED
+  TestSearchApiHelper::test_search_empty_query_returns_all            PASSED
+  TestRegisterApiHelper::test_register_valid_request_returns_user_data PASSED
+  TestRegisterApiHelper::test_register_password_mismatch_returns_none  PASSED
+  TestRegisterApiHelper::test_register_connection_error_returns_none   PASSED
+  TestRegisterApiHelper::test_register_duplicate_username_returns_none PASSED
+  TestLoginApiHelper::test_login_valid_credentials_returns_token_data  PASSED
+  TestLoginApiHelper::test_login_invalid_credentials_returns_none      PASSED
+  TestLoginApiHelper::test_login_connection_error_returns_none         PASSED
+  TestGenreOptions::test_genre_map_includes_all_backend_genres         PASSED
+
+Overall: PASS — all 11 tests passed, 0 failures, 0 errors.
