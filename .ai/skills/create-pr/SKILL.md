@@ -7,17 +7,25 @@ description: Creates well-formatted GitHub PR from feature or task implementatio
 
 ## Workflow
 
-Execute this full flow: draft commit → commit → push → open PR.
+Execute this full flow: draft commit → branch → commit → push → open PR.
 
 ### Step 1: Analyze changes
 
 - Run `git status` and `git diff --stat`
 - Review changes to understand scope and type (feat, fix, chore, refactor, docs, test)
 
-### Step 2: Ensure feature branch
+### Step 2: Ensure feature branch — NEVER push to main
 
-- If on `main` or `master`: create and switch to `git checkout -b <type>/<scope>-<slug>` (e.g. `feat/search-add-book-search`)
-- If already on a feature branch: stay on it
+**This is a hard rule: direct commits to `main` or `master` are forbidden.**
+
+1. Check current branch: `git rev-parse --abbrev-ref HEAD`
+2. **If on `main` or `master`**:
+   - Derive a branch name from the changes: `<type>/<scope>-<short-slug>` (e.g. `feat/agents-exec-plan-skill`, `chore/workflow-doc-update`)
+   - Create and switch: `git checkout -b <branch-name>`
+   - **Do not commit or push until this step is complete.**
+3. **If already on a feature branch**: stay on it — no action needed.
+
+> ⛔ If for any reason you cannot create a branch, **stop and tell the user** rather than pushing to main.
 
 ### Step 3: Ensure execution plan and test artifacts are checked in
 
