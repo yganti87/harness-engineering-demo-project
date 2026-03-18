@@ -179,10 +179,13 @@ Produce a short video demonstrating the feature works end-to-end:
 
 ### Commit the evidence
 
-After all captures are complete, commit the verification output:
+After all captures are complete, commit **all** verification output — both the
+text summary and the media folder:
+
 ```bash
+git add docs/verification-output/{plan-id}-verification.txt
 git add docs/verification-output/{plan-id}/
-git commit -m "chore({plan-id}): add verification screenshots and video"
+git commit -m "chore({plan-id}): add verification output, screenshots and video"
 ```
 
 The video and screenshot paths must be included in the verification output file and PR description.

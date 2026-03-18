@@ -158,10 +158,13 @@ For tasks that touch UI or API endpoints, produce a short verification video:
 
 ### Commit the evidence
 
-After all captures are complete, commit the verification output:
+After all captures are complete, commit **all** verification output — both the
+text summary and the media folder:
+
 ```bash
+git add docs/verification-output/{task-id}-verification.txt
 git add docs/verification-output/{task-id}/
-git commit -m "chore({task-id}): add verification screenshots and video"
+git commit -m "chore({task-id}): add verification output, screenshots and video"
 ```
 
 Include the video and screenshot paths in the verification output and PR description.
