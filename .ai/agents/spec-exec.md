@@ -60,6 +60,7 @@ See [docs/exec-plans/active/001-library-search.md](../docs/exec-plans/active/001
      - `{plan-id}-unit-raw.txt` — `cd backend && mvn test -Dgroups='!integration'`
      - `{plan-id}-integration-raw.txt` — `cd backend && mvn failsafe:integration-test`
      Create `docs/exec-plans/raw-test-output/` if it does not exist.
+     **Do NOT commit raw test output** — this directory is gitignored. It is for local diagnosis only.
    - **Analyze output**: Parse raw output per the test-runner skills. Success = Failures: 0, Errors: 0; no `<<< FAILURE!` or `<<< ERROR!`.
    - **Write test summary**: Write to `docs/exec-plans/test-output/{plan-id}-test-summary.txt` after each run.
    - **If any step fails**: Diagnose → Fix → Re-run that step (and any downstream steps) → Repeat until all pass or escalation (see Test Failure Diagnosis & Escalation).
