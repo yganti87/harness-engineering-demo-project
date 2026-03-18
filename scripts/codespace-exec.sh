@@ -31,8 +31,27 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# ─── Load GH_TOKEN from .env if not already set ──────────────────────────────
+load_gh_token() {
+  if [[ -z "${GH_TOKEN:-}" ]]; then
+    local env_file="${PROJECT_ROOT}/.env"
+    if [[ -f "$env_file" ]]; then
+      local token
+      token=$(grep -E '^GH_TOKEN=' "$env_file" 2>/dev/null | head -1 | cut -d= -f2-)
+      if [[ -n "$token" ]]; then
+        export GH_TOKEN="$token"
+      fi
+    fi
+  fi
+  if [[ -z "${GH_TOKEN:-}" ]]; then
+    echo -e "${RED}✗ GH_TOKEN not set. Add it to .env or export it.${NC}"
+    exit 1
+  fi
+}
+
 # ─── Load codespace name ────────────────────────────────────────────────────
 load_codespace_name() {
+  load_gh_token
   # Priority: env var > .codespace.env file
   if [[ -n "${CODESPACE_NAME:-}" ]]; then
     return
@@ -112,7 +131,7 @@ show_status() {
   echo ""
   echo -e "  Name:  ${GREEN}${CODESPACE_NAME}${NC}"
   echo ""
-  gh codespace view --codespace "$CODESPACE_NAME" --json state,gitStatus,machine,repository \
+  gh codespace view --codespace "$CODESPACE_NAME" --json state,gitStatus,machineName,repository \
     2>/dev/null || echo -e "  ${RED}Could not retrieve status${NC}"
   echo ""
 
