@@ -32,7 +32,7 @@ Execute this full flow: draft commit → branch → commit → push → open PR.
 - **IMPORTANT**: Before creating the PR, verify that the execution plan has been committed.
 - If this is a feature (F00x), check that `docs/exec-plans/completed/{id}-{name}.md` exists. If not, create it from the plan file.
 - Update `docs/PLANS.md` to move the feature from Active to Completed (or add it to Completed if missing).
-- Include test screenshots in `test-output/F00x/` if browser verification was performed.
+- Include test screenshots in `docs/exec-plans/test-output/F00x/` if browser verification was performed.
 - Commit any missing execution plan or test artifacts before proceeding.
 
 ### Step 4: Draft and create commit
