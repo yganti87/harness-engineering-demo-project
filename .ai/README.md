@@ -14,6 +14,8 @@ Works with any AI coding agent (Claude, Cursor, etc.). This folder is the single
 | [create-pr](skills/create-pr/SKILL.md) | User asks to create a GitHub PR, draft a pull request, or prepare PR content for completed implementation |
 | [unit-test-runner](skills/unit-test-runner/SKILL.md) | Running unit tests for plan execution; analyzing Maven Surefire output to determine success/failure |
 | [integration-test-runner](skills/integration-test-runner/SKILL.md) | Running integration tests for plan execution; analyzing Maven Failsafe output (do not trust exit code alone) |
+| [exec-plan](skills/exec-plan/SKILL.md) | User asks to execute an exec plan or implement a spec ("execute the plan", "implement feature X", "run the exec plan") |
+| [review-pr](skills/review-pr/SKILL.md) | User asks to review a PR against its spec ("review PR #N", "check PR against spec", "does PR match the spec") |
 
 ### Slash Commands (commands/)
 
