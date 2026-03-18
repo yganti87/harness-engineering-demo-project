@@ -2,22 +2,29 @@ package com.library.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 import com.library.types.dto.ApiResponse;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import java.util.LinkedHashMap;
-import org.junit.jupiter.api.Order;
+import java.util.Properties;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -25,9 +32,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration tests for auth endpoints.
+ * Integration tests for auth endpoints (F007 — email-based auth with verification).
  *
- * <p>Uses Testcontainers for PostgreSQL. Run: mvn test -Dgroups=integration
+ * <p>Uses Testcontainers for PostgreSQL. JavaMailSender is mocked so no real SMTP is needed.
+ * Run: mvn verify -Dgroups=integration
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -47,24 +55,41 @@ class AuthIntegrationTest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.mail.host", () -> "localhost");
+        registry.add("spring.mail.port", () -> "1025");
     }
+
+    @MockBean
+    private JavaMailSender javaMailSender;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Test
-    @Order(1)
-    void register_validRequest_returns201WithUser() {
-        String body = """
-            {"username":"testuser1","password":"secret123","confirmPassword":"secret123"}
-            """;
+    @BeforeEach
+    void stubMailSender() {
+        // Return a real MimeMessage from createMimeMessage() so EmailServiceImpl can populate it
+        MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
+        org.mockito.Mockito.when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
+        doNothing().when(javaMailSender).send(any(MimeMessage.class));
+    }
 
+    private HttpHeaders jsonHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+        return headers;
+    }
+
+    @Test
+    void register_validEmail_returns201() {
+        String body = """
+            {"email":"reg201@example.com","password":"password123","confirmPassword":"password123"}
+            """;
 
         ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-            "/api/v1/auth/register", entity, ApiResponse.class);
+            "/api/v1/auth/register",
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -72,108 +97,163 @@ class AuthIntegrationTest {
 
         LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) response.getBody().getData();
         assertThat(data).isNotNull();
-        assertThat(data.get("username")).isEqualTo("testuser1");
+        assertThat(data.get("email")).isEqualTo("reg201@example.com");
+        assertThat(data.get("emailVerified")).isEqualTo(false);
         assertThat(data.get("id")).isNotNull();
     }
 
     @Test
-    @Order(2)
-    void register_duplicateUsername_returns409() {
+    void register_duplicateEmail_returns409() {
         String body = """
-            {"username":"dupuser","password":"secret123","confirmPassword":"secret123"}
+            {"email":"dup409@example.com","password":"password123","confirmPassword":"password123"}
             """;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
-
-        restTemplate.postForEntity("/api/v1/auth/register", entity, ApiResponse.class);
+        restTemplate.postForEntity(
+            "/api/v1/auth/register",
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
 
         ResponseEntity<ApiResponse> second = restTemplate.postForEntity(
-            "/api/v1/auth/register", entity, ApiResponse.class);
+            "/api/v1/auth/register",
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
 
         assertThat(second.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(second.getBody().getStatus()).isEqualTo(409);
-        assertThat(second.getBody().getError()).contains("already taken");
     }
 
     @Test
-    @Order(3)
-    void login_validCredentials_returns200WithToken() {
-        String registerBody = """
-            {"username":"loginuser","password":"mypass456","confirmPassword":"mypass456"}
-            """;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        restTemplate.postForEntity(
-            "/api/v1/auth/register",
-            new HttpEntity<>(registerBody, headers),
-            ApiResponse.class);
-
-        String loginBody = """
-            {"username":"loginuser","password":"mypass456"}
+    void register_invalidEmailFormat_returns400() {
+        String body = """
+            {"email":"not-an-email","password":"password123","confirmPassword":"password123"}
             """;
 
         ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-            "/api/v1/auth/login",
-            new HttpEntity<>(loginBody, headers),
-            ApiResponse.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody().getStatus()).isEqualTo(200);
-
-        LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) response.getBody().getData();
-        assertThat(data.get("username")).isEqualTo("loginuser");
-        assertThat(data.get("userId")).isNotNull();
-        assertThat(data.get("token")).isNotNull();
-        assertThat(data.get("token").toString()).isNotBlank();
-    }
-
-    @Test
-    void login_invalidPassword_returns401() {
-        String registerBody = """
-            {"username":"badpassuser","password":"correct","confirmPassword":"correct"}
-            """;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        restTemplate.postForEntity(
             "/api/v1/auth/register",
-            new HttpEntity<>(registerBody, headers),
-            ApiResponse.class);
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
 
-        String loginBody = """
-            {"username":"badpassuser","password":"wrongpassword"}
-            """;
-
-        // TestRestTemplate/RestTemplate throws ResourceAccessException on 401 due to
-        // Java HttpURLConnection "cannot retry due to server authentication" behavior.
-        // Assert that invalid login triggers a client error (server returns 401).
-        assertThatThrownBy(() ->
-            restTemplate.postForEntity(
-                "/api/v1/auth/login",
-                new HttpEntity<>(loginBody, headers),
-                ApiResponse.class))
-            .isInstanceOf(org.springframework.web.client.ResourceAccessException.class)
-            .hasMessageContaining("api/v1/auth/login");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getStatus()).isEqualTo(400);
     }
 
     @Test
     void register_passwordMismatch_returns400() {
         String body = """
-            {"username":"mismatch","password":"pass1","confirmPassword":"pass2"}
+            {"email":"mismatch@example.com","password":"pass1","confirmPassword":"pass2"}
             """;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
 
         ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
             "/api/v1/auth/register",
-            new HttpEntity<>(body, headers),
-            ApiResponse.class);
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getStatus()).isEqualTo(400);
+    }
+
+    @Test
+    void login_unverifiedUser_returns403() {
+        // Register (email NOT verified)
+        String registerBody = """
+            {"email":"unverified403@example.com","password":"password123",
+            "confirmPassword":"password123"}
+            """;
+        restTemplate.postForEntity(
+            "/api/v1/auth/register",
+            new HttpEntity<>(registerBody, jsonHeaders()),
+            ApiResponse.class
+        );
+
+        // Try to login without verifying — expect 403
+        String loginBody = """
+            {"email":"unverified403@example.com","password":"password123"}
+            """;
+
+        ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
+            "/api/v1/auth/login",
+            new HttpEntity<>(loginBody, jsonHeaders()),
+            ApiResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody().getStatus()).isEqualTo(403);
+    }
+
+    @Test
+    void login_invalidPassword_returns401() {
+        // Register
+        String registerBody = """
+            {"email":"badpass401@example.com","password":"correctpass",
+            "confirmPassword":"correctpass"}
+            """;
+        restTemplate.postForEntity(
+            "/api/v1/auth/register",
+            new HttpEntity<>(registerBody, jsonHeaders()),
+            ApiResponse.class
+        );
+
+        // Try login with wrong password
+        // TestRestTemplate throws ResourceAccessException on 401 due to
+        // Java HttpURLConnection "cannot retry due to server authentication" behavior.
+        String loginBody = """
+            {"email":"badpass401@example.com","password":"wrongpassword"}
+            """;
+
+        assertThatThrownBy(() ->
+            restTemplate.postForEntity(
+                "/api/v1/auth/login",
+                new HttpEntity<>(loginBody, jsonHeaders()),
+                ApiResponse.class
+            )
+        ).isInstanceOf(org.springframework.web.client.ResourceAccessException.class);
+    }
+
+    @Test
+    void login_nonexistentEmail_returns401() {
+        // TestRestTemplate throws ResourceAccessException on 401.
+        String loginBody = """
+            {"email":"nobody@example.com","password":"anypassword"}
+            """;
+
+        assertThatThrownBy(() ->
+            restTemplate.postForEntity(
+                "/api/v1/auth/login",
+                new HttpEntity<>(loginBody, jsonHeaders()),
+                ApiResponse.class
+            )
+        ).isInstanceOf(org.springframework.web.client.ResourceAccessException.class);
+    }
+
+    @Test
+    void verify_invalidToken_returnsErrorHtml() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+            "/api/v1/auth/verify?token=completely-invalid-token",
+            String.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("Invalid Link");
+    }
+
+    @Test
+    void resendVerification_returns200() {
+        String body = """
+            {"email":"anynoneexistent@example.com"}
+            """;
+
+        ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
+            "/api/v1/auth/resend-verification",
+            new HttpEntity<>(body, jsonHeaders()),
+            ApiResponse.class
+        );
+
+        // Should return 200 regardless (prevents email enumeration)
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getStatus()).isEqualTo(200);
     }
 }

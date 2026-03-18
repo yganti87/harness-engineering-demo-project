@@ -6,7 +6,7 @@
 
 | Plan | Feature | Status |
 |------|---------|--------|
-| _(none)_ | | |
+| [007-email-verification.md](exec-plans/active/007-email-verification.md) | F007 Email-Based Authentication with Email Verification | in_progress |
 
 ### Completed Plans
 

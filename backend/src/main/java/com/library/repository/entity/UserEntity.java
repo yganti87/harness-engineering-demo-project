@@ -20,7 +20,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 /**
  * JPA entity representing a user account.
  *
- * <p>Schema managed by Flyway migration V2__create_users_table.sql.
+ * <p>Schema managed by Flyway migrations V2 + V3.
  * Passwords stored as BCrypt hashes (never plain text).
  */
 @Entity
@@ -37,11 +37,14 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

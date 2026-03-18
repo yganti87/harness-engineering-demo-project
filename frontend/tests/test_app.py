@@ -30,25 +30,26 @@ def _build_search_response(total_elements: int, books: list) -> dict:
     }
 
 
-def _build_register_response(user_id: str, username: str) -> dict:
+def _build_register_response(user_id: str, email: str) -> dict:
     """Build a mock ApiResponse envelope for a successful registration."""
     return {
         "status": 201,
         "data": {
             "id": user_id,
-            "username": username,
+            "email": email,
+            "emailVerified": False,
         },
         "error": None,
     }
 
 
-def _build_login_response(user_id: str, username: str, token: str) -> dict:
+def _build_login_response(user_id: str, email: str, token: str) -> dict:
     """Build a mock ApiResponse envelope for a successful login."""
     return {
         "status": 200,
         "data": {
             "userId": user_id,
-            "username": username,
+            "email": email,
             "token": token,
         },
         "error": None,
@@ -85,7 +86,7 @@ def _call_search_api(
 
 def _call_register_api(
     backend_url: str,
-    username: str,
+    email: str,
     password: str,
     confirm_password: str,
     timeout: int = 10,
@@ -97,7 +98,7 @@ def _call_register_api(
         response = requests.post(
             f"{backend_url}/api/v1/auth/register",
             json={
-                "username": username,
+                "email": email,
                 "password": password,
                 "confirmPassword": confirm_password,
             },
@@ -115,7 +116,7 @@ def _call_register_api(
 
 def _call_login_api(
     backend_url: str,
-    username: str,
+    email: str,
     password: str,
     timeout: int = 10,
 ) -> Optional[dict]:
@@ -123,7 +124,7 @@ def _call_login_api(
     try:
         response = requests.post(
             f"{backend_url}/api/v1/auth/login",
-            json={"username": username, "password": password},
+            json={"email": email, "password": password},
             timeout=timeout,
         )
         response.raise_for_status()
@@ -134,6 +135,28 @@ def _call_login_api(
         return None
     except Exception:
         return None
+
+
+def _call_resend_verification_api(
+    backend_url: str,
+    email: str,
+    timeout: int = 10,
+) -> bool:
+    """Extracted resend verification logic."""
+    try:
+        response = requests.post(
+            f"{backend_url}/api/v1/auth/resend-verification",
+            json={"email": email},
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        return True
+    except requests.exceptions.ConnectionError:
+        return False
+    except requests.exceptions.HTTPError:
+        return False
+    except Exception:
+        return False
 
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
@@ -182,22 +205,23 @@ class TestRegisterApiHelper:
     def test_register_valid_request_returns_user_data(self, mock_post):
         mock_response = MagicMock()
         mock_response.json.return_value = _build_register_response(
-            "abc-123", "alice"
+            "abc-123", "alice@example.com"
         )
         mock_response.raise_for_status = MagicMock()
         mock_post.return_value = mock_response
 
         result = _call_register_api(
-            "http://localhost:8080", "alice", "password123", "password123"
+            "http://localhost:8080", "alice@example.com", "password123", "password123"
         )
 
         assert result is not None
-        assert result["username"] == "alice"
+        assert result["email"] == "alice@example.com"
         assert result["id"] == "abc-123"
+        assert result["emailVerified"] is False
 
     def test_register_password_mismatch_returns_none(self):
         result = _call_register_api(
-            "http://localhost:8080", "alice", "password123", "different456"
+            "http://localhost:8080", "alice@example.com", "password123", "different456"
         )
 
         assert result is None
@@ -207,13 +231,13 @@ class TestRegisterApiHelper:
         mock_post.side_effect = requests.exceptions.ConnectionError()
 
         result = _call_register_api(
-            "http://localhost:8080", "alice", "password123", "password123"
+            "http://localhost:8080", "alice@example.com", "password123", "password123"
         )
 
         assert result is None
 
     @patch("requests.post")
-    def test_register_duplicate_username_returns_none(self, mock_post):
+    def test_register_duplicate_email_returns_none(self, mock_post):
         mock_response = MagicMock()
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
             response=MagicMock(status_code=409)
@@ -221,7 +245,7 @@ class TestRegisterApiHelper:
         mock_post.return_value = mock_response
 
         result = _call_register_api(
-            "http://localhost:8080", "alice", "password123", "password123"
+            "http://localhost:8080", "alice@example.com", "password123", "password123"
         )
 
         assert result is None
@@ -233,15 +257,15 @@ class TestLoginApiHelper:
     def test_login_valid_credentials_returns_token_data(self, mock_post):
         mock_response = MagicMock()
         mock_response.json.return_value = _build_login_response(
-            "abc-123", "alice", "jwt-token-value"
+            "abc-123", "alice@example.com", "jwt-token-value"
         )
         mock_response.raise_for_status = MagicMock()
         mock_post.return_value = mock_response
 
-        result = _call_login_api("http://localhost:8080", "alice", "password123")
+        result = _call_login_api("http://localhost:8080", "alice@example.com", "password123")
 
         assert result is not None
-        assert result["username"] == "alice"
+        assert result["email"] == "alice@example.com"
         assert result["userId"] == "abc-123"
         assert result["token"] == "jwt-token-value"
 
@@ -253,7 +277,7 @@ class TestLoginApiHelper:
         )
         mock_post.return_value = mock_response
 
-        result = _call_login_api("http://localhost:8080", "alice", "wrongpassword")
+        result = _call_login_api("http://localhost:8080", "alice@example.com", "wrongpassword")
 
         assert result is None
 
@@ -261,9 +285,34 @@ class TestLoginApiHelper:
     def test_login_connection_error_returns_none(self, mock_post):
         mock_post.side_effect = requests.exceptions.ConnectionError()
 
-        result = _call_login_api("http://localhost:8080", "alice", "password123")
+        result = _call_login_api("http://localhost:8080", "alice@example.com", "password123")
 
         assert result is None
+
+
+class TestResendVerificationApiHelper:
+
+    @patch("requests.post")
+    def test_resend_verification_returns_true_on_success(self, mock_post):
+        mock_response = MagicMock()
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value = mock_response
+
+        result = _call_resend_verification_api(
+            "http://localhost:8080", "alice@example.com"
+        )
+
+        assert result is True
+
+    @patch("requests.post")
+    def test_resend_verification_connection_error_returns_false(self, mock_post):
+        mock_post.side_effect = requests.exceptions.ConnectionError()
+
+        result = _call_resend_verification_api(
+            "http://localhost:8080", "alice@example.com"
+        )
+
+        assert result is False
 
 
 class TestGenreOptions:

@@ -1,14 +1,15 @@
 package com.library.controller.advice;
 
+import com.library.service.EmailAlreadyExistsException;
+import com.library.service.EmailNotVerifiedException;
 import com.library.service.InvalidCredentialsException;
-import com.library.service.UsernameAlreadyExistsException;
+import com.library.service.ResendRateLimitedException;
 import com.library.types.dto.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.http.HttpStatus;
-
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,13 +28,31 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUsernameAlreadyExists(
-        UsernameAlreadyExistsException ex
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmailAlreadyExists(
+        EmailAlreadyExistsException ex
     ) {
-        log.warn("Username already exists: {}", ex.getMessage());
+        log.warn("Email already exists: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(ApiResponse.error(HttpStatus.CONFLICT.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmailNotVerified(
+        EmailNotVerifiedException ex
+    ) {
+        log.warn("Email not verified: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResendRateLimitedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResendRateLimited(
+        ResendRateLimitedException ex
+    ) {
+        log.warn("Resend rate limited: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(ApiResponse.error(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

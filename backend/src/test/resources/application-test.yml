@@ -9,6 +9,13 @@ spring:
   flyway:
     enabled: true
 
+# Disable Spring Boot's built-in mail health contributor in tests.
+# We have our own MailHealthIndicator; the auto one fails when JavaMailSender is mocked.
+management:
+  health:
+    mail:
+      enabled: false
+
 logging:
   file:
     name: /tmp/library-test.log
