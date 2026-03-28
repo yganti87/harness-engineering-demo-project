@@ -247,11 +247,23 @@ meterRegistry.counter("auth_registration_total", "status", "duplicate_email").in
 meterRegistry.counter("auth_registration_total", "status", "error").increment();
 ```
 
+### Common tags
+
+All metrics automatically include `application` and `environment` tags configured in `application.yml`:
+
+```yaml
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${APP_ENVIRONMENT:local}
+```
+
 ### How to add a new metric
 
-1. **Add the name to the allowlist** in `MetricsConfig.ALLOWED_METRICS` first. The `MeterFilter`
-   denies any metric name not in this set, so a metric used in service code but missing from the
-   allowlist will silently be dropped.
+1. **Add the name to the allowlist** in `metrics-allowlist.yml` under `app.metrics.allowed`. The
+   `MeterFilter` in `MetricsConfig` denies any metric name not in this list, so a metric used in
+   service code but missing from the allowlist will silently be dropped.
 2. **Use it in service code** via `meterRegistry.counter(name, tags)` or `@Timed(value = name)`.
 
 ### Anti-patterns (enforced by ArchUnit rules in `LayerDependencyTest`)
@@ -260,7 +272,7 @@ meterRegistry.counter("auth_registration_total", "status", "error").increment();
 |---|---|---|
 | `private Counter regSuccessCounter;` field in service | Pre-registered fields require `@PostConstruct` init and add indirection. Banned by `services_should_not_have_metric_fields`. | `meterRegistry.counter("auth_registration_total", "status", "success").increment()` |
 | `@PostConstruct void initMetrics()` in service | Metric init in lifecycle method hides where metrics are used. Banned by `services_should_not_use_postconstruct`. | Remove the method; use inline calls at each decision point. |
-| Using a new metric name without adding to `MetricsConfig` allowlist | Metric is silently denied by `MeterFilter` and never appears in Prometheus output. | Always add name to `MetricsConfig.ALLOWED_METRICS` first. |
+| Using a new metric name without adding to `metrics-allowlist.yml` | Metric is silently denied by `MeterFilter` and never appears in Prometheus output. | Always add name to `metrics-allowlist.yml` first. |
 
 ```java
 @Entity

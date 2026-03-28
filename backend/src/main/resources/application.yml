@@ -1,6 +1,8 @@
 spring:
   application:
     name: library-backend
+  config:
+    import: classpath:metrics-allowlist.yml
 
   # ── DataSource (overridden by application-docker.yml) ─────────────────────
   datasource:
@@ -62,6 +64,10 @@ management:
     logfile:
       enabled: true
       external-file: /var/log/app/app.log
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${APP_ENVIRONMENT:local}
 
 # ── JWT + Mail + Verification ──────────────────────────────────────────────
 app:

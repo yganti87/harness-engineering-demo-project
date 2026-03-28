@@ -47,15 +47,28 @@ No new REST endpoints. The existing Prometheus scrape endpoint is unchanged:
 
 ## Technical Design
 
-### MetricsConfig (new)
+### Common tags (application.yml)
 
-Registered in `com.library.config` (config layer — allowed to be imported by service layer):
+All metrics automatically include `application` and `environment` tags via Spring Boot's native `management.metrics.tags.*`:
 
-- `TimedAspect` bean — enables `@Timed` on any Spring-managed bean
-- `CountedAspect` bean — enables `@Counted` on any Spring-managed bean
-- `MeterFilter` bean — denies all meters not in the explicit allowlist
+```yaml
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${APP_ENVIRONMENT:local}
+```
 
-### Allowlist (default)
+### MetricsConfig
+
+Registered in `com.library.config` (config layer):
+
+- `TimedAspect` bean — enables `@Timed` on any Spring-managed bean (not auto-configured by Spring Boot 3.2)
+- `MeterFilter` bean — denies all meters not in the externalized allowlist
+
+### Allowlist (externalized to `metrics-allowlist.yml`)
+
+The allowlist is maintained in `src/main/resources/metrics-allowlist.yml` (imported via `spring.config.import`), bound to `MetricsProperties` via `@ConfigurationProperties(prefix = "app.metrics")`. Adding a new metric is a YAML edit, not a Java code change.
 
 | Group | Metric names |
 |-------|-------------|

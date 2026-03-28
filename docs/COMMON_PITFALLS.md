@@ -167,8 +167,9 @@ every invocation is safe and does not create duplicate registrations.
 ### P017: Metric not appearing in Prometheus output
 
 **Symptom**: Counter incremented in code but not visible in `/actuator/prometheus`
-**Cause**: The metric name is not in the `MetricsConfig` allowlist. The `MeterFilter` registered
-in `MetricsConfig` denies any metric not in `ALLOWED_METRICS`, causing silent drops.
-**Fix**: Add the metric name to `MetricsConfig.ALLOWED_METRICS` **before** using it in service
-code. This is intentional — all metrics must be declared upfront to prevent sprawl.
+**Cause**: The metric name is not in the metrics allowlist. The `MeterFilter` in `MetricsConfig`
+denies any metric not listed in `metrics-allowlist.yml`, causing silent drops.
+**Fix**: Add the metric name to `backend/src/main/resources/metrics-allowlist.yml` under
+`app.metrics.allowed` **before** using it in service code. This is intentional — all metrics
+must be declared upfront to prevent sprawl.
 See docs/PATTERNS.md section "8. Metrics Pattern".

@@ -15,21 +15,25 @@ From `features.json` entry F008: 11 criteria.
 
 ## Implementation Steps
 
-### Phase 1: MetricsConfig — AOP beans + metrics allowlist
+### Phase 1a: Common tags + externalized allowlist
 
-- [x] **New file**: `backend/src/main/java/com/library/config/MetricsConfig.java`
-  - Annotate with `@Configuration`
-  - Register `TimedAspect` bean: `@Bean public TimedAspect timedAspect(MeterRegistry r)`
-  - Register `CountedAspect` bean: `@Bean public CountedAspect countedAspect(MeterRegistry r)`
-  - Register `MeterFilter` bean with an allowlist:
-    - JVM: `jvm.memory.used`, `jvm.memory.max`, `jvm.gc.pause`, `jvm.threads.live`
-    - System: `system.cpu.usage`, `process.cpu.usage`, `process.uptime`
-    - HTTP: `http.server.requests`
-    - HikariCP: `hikaricp.connections.active`, `hikaricp.connections.idle`, `hikaricp.connections.pending`
-    - Custom counters: `auth_registration_total`, `auth_login_total`, `auth_email_verification_total`, `auth_resend_verification_total`, `auth_verification_email_sent_total`
-    - `@Timed` timers: `auth.register`, `auth.login`, `auth.verify_email`, `auth.resend_verification`, `email.send_verification`
-  - Deny all other metric names by returning `MeterFilterReply.DENY`
-  - Add Javadoc: "Metrics allowlist — add new metric names here before using them in service code"
+- [ ] **File**: `backend/src/main/resources/application.yml`
+  - Add common tags under `management.metrics.tags`:
+    - `application: ${spring.application.name}`
+    - `environment: ${APP_ENVIRONMENT:local}`
+  - Add `spring.config.import: classpath:metrics-allowlist.yml`
+- [ ] **New file**: `backend/src/main/resources/metrics-allowlist.yml`
+  - Contains `app.metrics.allowed` list with all 21 metric names
+- [ ] **New file**: `backend/src/main/java/com/library/config/MetricsProperties.java`
+  - `@ConfigurationProperties(prefix = "app.metrics")` binding the YAML list
+
+### Phase 1b: MetricsConfig — AOP bean + externalized filter
+
+- [ ] **File**: `backend/src/main/java/com/library/config/MetricsConfig.java`
+  - Remove hardcoded `ALLOWED_METRICS` set
+  - Remove `CountedAspect` bean (not used)
+  - Keep `TimedAspect` bean (required — not auto-configured in Spring Boot 3.2)
+  - Inject `MetricsProperties` and use `properties.getAllowed()` in `MeterFilter`
 
 ### Phase 2: Refactor AuthServiceImpl
 

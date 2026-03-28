@@ -1,0 +1,35 @@
+# ── Metrics Allowlist ───────────────────────────────────────────────────────
+# Only metrics listed here are exported to Prometheus. All others are denied
+# by the MeterFilter in MetricsConfig. Add new metric names here BEFORE using
+# them in service code. See docs/PATTERNS.md section "8. Metrics Pattern".
+
+app:
+  metrics:
+    allowed:
+      # JVM metrics
+      - jvm.memory.used
+      - jvm.memory.max
+      - jvm.gc.pause
+      - jvm.threads.live
+      # System metrics
+      - system.cpu.usage
+      - process.cpu.usage
+      - process.uptime
+      # HTTP server metrics
+      - http.server.requests
+      # HikariCP connection pool
+      - hikaricp.connections.active
+      - hikaricp.connections.idle
+      - hikaricp.connections.pending
+      # Custom auth counters
+      - auth_registration_total
+      - auth_login_total
+      - auth_email_verification_total
+      - auth_resend_verification_total
+      - auth_verification_email_sent_total
+      # @Timed method timers
+      - auth.register
+      - auth.login
+      - auth.verify_email
+      - auth.resend_verification
+      - email.send_verification
