@@ -73,16 +73,6 @@ class AuthServiceTest {
             config,
             new SimpleMeterRegistry()
         );
-
-        // Trigger @PostConstruct
-        try {
-            java.lang.reflect.Method m =
-                AuthServiceImpl.class.getDeclaredMethod("initMetrics");
-            m.setAccessible(true);
-            m.invoke(authService);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test

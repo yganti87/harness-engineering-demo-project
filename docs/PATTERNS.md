@@ -216,6 +216,52 @@ public class PagedResponse<T> {
 
 JPA entities use UUID primary keys and `@CreationTimestamp`.
 
+## 8. Metrics Pattern
+
+Micrometer metrics in service classes follow two complementary conventions:
+
+### When to use `@Timed`
+
+Apply `@Timed(value = "metric.name")` at the **method level** to measure end-to-end latency of a
+service operation. The annotation is AOP-driven (requires `TimedAspect` bean in `MetricsConfig`)
+and is transparent to unit tests — no AOP context is active in `@ExtendWith(MockitoExtension.class)`
+tests, so the annotation has no effect and `SimpleMeterRegistry` absorbs the inline counters.
+
+```java
+@Override
+@Timed(value = "auth.register")
+@Transactional
+public UserDto register(RegisterRequest request) { ... }
+```
+
+### When to use inline `meterRegistry.counter()`
+
+Use inline `meterRegistry.counter(name, tags...)` calls at **business-logic decision points** to
+count discrete outcomes. Micrometer caches meters by name + tag set internally, so calling
+`meterRegistry.counter(...)` on every invocation is safe — it does not create duplicate
+registrations.
+
+```java
+meterRegistry.counter("auth_registration_total", "status", "success").increment();
+meterRegistry.counter("auth_registration_total", "status", "duplicate_email").increment();
+meterRegistry.counter("auth_registration_total", "status", "error").increment();
+```
+
+### How to add a new metric
+
+1. **Add the name to the allowlist** in `MetricsConfig.ALLOWED_METRICS` first. The `MeterFilter`
+   denies any metric name not in this set, so a metric used in service code but missing from the
+   allowlist will silently be dropped.
+2. **Use it in service code** via `meterRegistry.counter(name, tags)` or `@Timed(value = name)`.
+
+### Anti-patterns (enforced by ArchUnit rules in `LayerDependencyTest`)
+
+| Anti-pattern | Why it's wrong | Correct approach |
+|---|---|---|
+| `private Counter regSuccessCounter;` field in service | Pre-registered fields require `@PostConstruct` init and add indirection. Banned by `services_should_not_have_metric_fields`. | `meterRegistry.counter("auth_registration_total", "status", "success").increment()` |
+| `@PostConstruct void initMetrics()` in service | Metric init in lifecycle method hides where metrics are used. Banned by `services_should_not_use_postconstruct`. | Remove the method; use inline calls at each decision point. |
+| Using a new metric name without adding to `MetricsConfig` allowlist | Metric is silently denied by `MeterFilter` and never appears in Prometheus output. | Always add name to `MetricsConfig.ALLOWED_METRICS` first. |
+
 ```java
 @Entity
 @Table(name = "books")
