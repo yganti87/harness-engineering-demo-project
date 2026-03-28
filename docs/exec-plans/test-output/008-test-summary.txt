@@ -1,0 +1,20 @@
+Plan: 008-annotation-driven-metrics
+Date: 2026-03-27
+
+== Checkstyle ==
+Result: PASS
+Violations: 0
+
+== Unit + Architecture Tests ==
+Command: cd backend && mvn clean test -Dgroups='!integration'
+Result: PASS
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0
+
+Notable: LayerDependencyTest now includes 7 rules (5 layer + 2 new metrics rules):
+  - services_should_not_have_metric_fields: PASS (allowEmptyShould=true, no Counter/Timer/Gauge fields in service package)
+  - services_should_not_use_postconstruct: PASS (allowEmptyShould=true, no @PostConstruct in service package)
+
+== Integration Tests ==
+Command: cd backend && mvn verify -Dgroups=integration
+Result: PASS
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0

@@ -1,10 +1,16 @@
 package com.library.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Architecture tests enforcing the layer dependency model.
@@ -92,6 +98,44 @@ class LayerDependencyTest {
                 + "REMEDIATION: Remove service or controller imports from the config class. "
                 + "Configuration should depend only on types and external libraries. "
                 + "See docs/ARCHITECTURE.md."
+            );
+
+    /**
+     * Services must NOT declare Counter/Timer/Gauge fields.
+     * REMEDIATION: Use inline meterRegistry.counter() calls instead.
+     * See docs/PATTERNS.md section "8. Metrics Pattern".
+     */
+    @ArchTest
+    static final ArchRule services_should_not_have_metric_fields =
+        noFields().that().haveRawType(Counter.class)
+            .or().haveRawType(Timer.class)
+            .or().haveRawType(Gauge.class)
+            .should().beDeclaredInClassesThat().resideInAPackage("..service..")
+            .allowEmptyShould(true)
+            .because(
+                "Services must use inline meterRegistry.counter() calls, not pre-registered "
+                + "Counter/Timer/Gauge fields. "
+                + "REMEDIATION: Replace field + @PostConstruct with "
+                + "meterRegistry.counter(name, tags).increment(). "
+                + "See docs/PATTERNS.md section '8. Metrics Pattern'."
+            );
+
+    /**
+     * Services must NOT use {@code @PostConstruct} for metric initialization.
+     * REMEDIATION: Remove @PostConstruct initMetrics() and use inline meterRegistry.counter()
+     * calls instead.
+     * See docs/PATTERNS.md section "8. Metrics Pattern".
+     */
+    @ArchTest
+    static final ArchRule services_should_not_use_postconstruct =
+        noMethods().that().areAnnotatedWith(PostConstruct.class)
+            .should().beDeclaredInClassesThat().resideInAPackage("..service..")
+            .allowEmptyShould(true)
+            .because(
+                "Services must not use @PostConstruct for metric initialization. "
+                + "REMEDIATION: Remove @PostConstruct initMetrics() and use inline "
+                + "meterRegistry.counter() calls instead. "
+                + "See docs/PATTERNS.md section '8. Metrics Pattern'."
             );
 
 }

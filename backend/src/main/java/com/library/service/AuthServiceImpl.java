@@ -10,9 +10,8 @@ import com.library.types.dto.LoginResponse;
 import com.library.types.dto.RegisterRequest;
 import com.library.types.dto.UserDto;
 import com.library.types.util.EmailMaskUtil;
-import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -42,65 +41,15 @@ public class AuthServiceImpl implements AuthService {
     private final VerificationConfig verificationConfig;
     private final MeterRegistry meterRegistry;
 
-    // Registration counters
-    private Counter regSuccessCounter;
-    private Counter regDuplicateCounter;
-    private Counter regErrorCounter;
-
-    // Login counters
-    private Counter loginSuccessCounter;
-    private Counter loginUnverifiedCounter;
-    private Counter loginInvalidCounter;
-
-    // Verification counters
-    private Counter verifySuccessCounter;
-    private Counter verifyExpiredCounter;
-    private Counter verifyInvalidCounter;
-
-    // Resend counters
-    private Counter resendSentCounter;
-    private Counter resendRateLimitedCounter;
-    private Counter resendNoActionCounter;
-
-    @PostConstruct
-    void initMetrics() {
-        regSuccessCounter = Counter.builder("auth_registration_total")
-            .tag("status", "success").register(meterRegistry);
-        regDuplicateCounter = Counter.builder("auth_registration_total")
-            .tag("status", "duplicate_email").register(meterRegistry);
-        regErrorCounter = Counter.builder("auth_registration_total")
-            .tag("status", "error").register(meterRegistry);
-
-        loginSuccessCounter = Counter.builder("auth_login_total")
-            .tag("status", "success").register(meterRegistry);
-        loginUnverifiedCounter = Counter.builder("auth_login_total")
-            .tag("status", "unverified").register(meterRegistry);
-        loginInvalidCounter = Counter.builder("auth_login_total")
-            .tag("status", "invalid_credentials").register(meterRegistry);
-
-        verifySuccessCounter = Counter.builder("auth_email_verification_total")
-            .tag("status", "success").register(meterRegistry);
-        verifyExpiredCounter = Counter.builder("auth_email_verification_total")
-            .tag("status", "expired").register(meterRegistry);
-        verifyInvalidCounter = Counter.builder("auth_email_verification_total")
-            .tag("status", "invalid").register(meterRegistry);
-
-        resendSentCounter = Counter.builder("auth_resend_verification_total")
-            .tag("status", "sent").register(meterRegistry);
-        resendRateLimitedCounter = Counter.builder("auth_resend_verification_total")
-            .tag("status", "rate_limited").register(meterRegistry);
-        resendNoActionCounter = Counter.builder("auth_resend_verification_total")
-            .tag("status", "no_action").register(meterRegistry);
-    }
-
     @Override
+    @Timed(value = "auth.register")
     @Transactional
     public UserDto register(RegisterRequest request) {
         String maskedEmail = EmailMaskUtil.mask(request.getEmail());
 
         if (userRepository.existsByEmail(request.getEmail())) {
             log.warn("Registration attempted with existing email email='{}'", maskedEmail);
-            regDuplicateCounter.increment();
+            meterRegistry.counter("auth_registration_total", "status", "duplicate_email").increment();
             throw new EmailAlreadyExistsException(
                 "Email already registered: " + request.getEmail());
         }
@@ -130,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
             emailService.sendVerificationEmail(saved.getEmail(), token);
 
-            regSuccessCounter.increment();
+            meterRegistry.counter("auth_registration_total", "status", "success").increment();
             log.info("User registered, verification email sent email='{}' userId='{}'",
                 maskedEmail, saved.getId());
 
@@ -138,12 +87,13 @@ public class AuthServiceImpl implements AuthService {
         } catch (EmailAlreadyExistsException e) {
             throw e;
         } catch (Exception e) {
-            regErrorCounter.increment();
+            meterRegistry.counter("auth_registration_total", "status", "error").increment();
             throw e;
         }
     }
 
     @Override
+    @Timed(value = "auth.login")
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         String maskedEmail = EmailMaskUtil.mask(request.getEmail());
@@ -151,25 +101,26 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> {
                 log.warn("Login failed: invalid credentials email='{}'", maskedEmail);
-                loginInvalidCounter.increment();
+                meterRegistry.counter("auth_login_total", "status", "invalid_credentials")
+                    .increment();
                 return new InvalidCredentialsException("Invalid email or password");
             });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             log.warn("Login failed: invalid credentials email='{}'", maskedEmail);
-            loginInvalidCounter.increment();
+            meterRegistry.counter("auth_login_total", "status", "invalid_credentials").increment();
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
         if (!user.isEmailVerified()) {
             log.warn("Login attempted by unverified user email='{}'", maskedEmail);
-            loginUnverifiedCounter.increment();
+            meterRegistry.counter("auth_login_total", "status", "unverified").increment();
             throw new EmailNotVerifiedException(
                 "Email not verified. Please check your inbox for the verification email.");
         }
 
         String token = jwtService.generate(user.getId(), user.getEmail());
-        loginSuccessCounter.increment();
+        meterRegistry.counter("auth_login_total", "status", "success").increment();
         log.info("User logged in userId='{}'", user.getId());
 
         return LoginResponse.builder()
@@ -180,13 +131,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Timed(value = "auth.verify_email")
     @Transactional
     public String verifyEmail(String token) {
         Optional<EmailVerificationTokenEntity> tokenOpt = tokenRepository.findByToken(token);
 
         if (tokenOpt.isEmpty()) {
             log.warn("Verification attempted with invalid token");
-            verifyInvalidCounter.increment();
+            meterRegistry.counter("auth_email_verification_total", "status", "invalid").increment();
             return "invalid";
         }
 
@@ -195,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
         if (Instant.now().isAfter(tokenEntity.getExpiresAt())) {
             log.warn("Verification attempted with expired token tokenId='{}'",
                 tokenEntity.getId());
-            verifyExpiredCounter.increment();
+            meterRegistry.counter("auth_email_verification_total", "status", "expired").increment();
             return "expired";
         }
 
@@ -203,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             log.warn("Verification attempted with invalid token");
-            verifyInvalidCounter.increment();
+            meterRegistry.counter("auth_email_verification_total", "status", "invalid").increment();
             return "invalid";
         }
 
@@ -212,20 +164,22 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         tokenRepository.deleteAllByUserId(userId);
 
-        verifySuccessCounter.increment();
+        meterRegistry.counter("auth_email_verification_total", "status", "success").increment();
         log.info("Email verified successfully userId='{}'", userId);
 
         return "success";
     }
 
     @Override
+    @Timed(value = "auth.resend_verification")
     @Transactional
     public void resendVerification(String email) {
         String maskedEmail = EmailMaskUtil.mask(email);
 
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty() || userOpt.get().isEmailVerified()) {
-            resendNoActionCounter.increment();
+            meterRegistry.counter("auth_resend_verification_total", "status", "no_action")
+                .increment();
             log.info("Resend verification no action email='{}'", maskedEmail);
             return;
         }
@@ -241,7 +195,8 @@ public class AuthServiceImpl implements AuthService {
                 long remaining = ChronoUnit.SECONDS.between(Instant.now(), cooldownEnd);
                 log.warn("Resend verification rate limited email='{}' cooldownSeconds='{}'",
                     maskedEmail, remaining);
-                resendRateLimitedCounter.increment();
+                meterRegistry.counter("auth_resend_verification_total", "status", "rate_limited")
+                    .increment();
                 throw new ResendRateLimitedException(
                     "Please wait before requesting another verification email.");
             }
@@ -263,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendVerificationEmail(email, token);
 
-        resendSentCounter.increment();
+        meterRegistry.counter("auth_resend_verification_total", "status", "sent").increment();
         log.info("Verification email resent email='{}'", maskedEmail);
     }
 

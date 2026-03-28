@@ -139,3 +139,37 @@ public ResponseEntity<...> searchBooks(@Valid BookSearchRequest request) { ... }
 
 **Symptom**: `Checkstyle: maxLineLength` (max is 120)
 **Fix**: Break long method chains or long strings across multiple lines.
+
+---
+
+## Metrics Pitfalls
+
+### P016: Pre-registered metric fields in services
+
+**Symptom**: ArchUnit fails with `services_should_not_have_metric_fields`
+**Wrong**:
+```java
+private Counter regSuccessCounter;
+
+@PostConstruct
+void initMetrics() {
+    regSuccessCounter = Counter.builder("auth_registration_total")
+        .tag("status", "success").register(meterRegistry);
+}
+```
+**Fix**: Remove the field and `@PostConstruct` method. Use inline calls at each decision point:
+```java
+meterRegistry.counter("auth_registration_total", "status", "success").increment();
+```
+Micrometer caches meters by name + tag set internally, so calling `meterRegistry.counter(...)` on
+every invocation is safe and does not create duplicate registrations.
+
+### P017: Metric not appearing in Prometheus output
+
+**Symptom**: Counter incremented in code but not visible in `/actuator/prometheus`
+**Cause**: The metric name is not in the metrics allowlist. The `MeterFilter` in `MetricsConfig`
+denies any metric not listed in `metrics-allowlist.yml`, causing silent drops.
+**Fix**: Add the metric name to `backend/src/main/resources/metrics-allowlist.yml` under
+`app.metrics.allowed` **before** using it in service code. This is intentional — all metrics
+must be declared upfront to prevent sprawl.
+See docs/PATTERNS.md section "8. Metrics Pattern".

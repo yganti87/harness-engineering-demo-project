@@ -17,6 +17,7 @@
 | [004-prometheus-grafana-observability.md](exec-plans/completed/004-prometheus-grafana-observability.md) | F004 Prometheus & Grafana Observability | completed |
 | [005-auth-gated-landing-page.md](exec-plans/completed/005-auth-gated-landing-page.md) | F005 Auth-Gated Landing Page | completed |
 | [006-create-account-ux.md](exec-plans/completed/006-create-account-ux.md) | F006 Create Account Success UX | completed |
+| [008-annotation-driven-metrics.md](exec-plans/completed/008-annotation-driven-metrics.md) | F008 Annotation-Driven Metrics with Cost-Controlled Export | completed |
 
 ## Tasks (Task Exec Plans)
 

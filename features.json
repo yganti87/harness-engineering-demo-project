@@ -241,6 +241,44 @@
       ],
       "testSteps": [],
       "implementedFiles": []
+    },
+    {
+      "id": "F008",
+      "name": "Annotation-Driven Metrics with Cost-Controlled Export",
+      "status": "completed",
+      "priority": "medium",
+      "description": "Replace manual Counter field declarations in service classes with @Timed/@Counted annotations and a MeterFilter allowlist that controls which metrics are exported to Prometheus.",
+      "acceptanceCriteria": [
+        "No Counter, Timer, or Gauge fields exist in any service class",
+        "No @PostConstruct methods exist in any service class",
+        "@Timed annotations are present on all public methods of AuthServiceImpl and EmailServiceImpl",
+        "All existing auth/email metrics still appear at /actuator/prometheus",
+        "Denied metrics (e.g., logback.events, tomcat.*) do NOT appear at /actuator/prometheus",
+        "ArchUnit test fails if a Counter field is added to a service class",
+        "ArchUnit test fails if @PostConstruct is added to a service class",
+        "All unit tests pass without reflection-based @PostConstruct invocation",
+        "docs/PATTERNS.md contains section '8. Metrics Pattern' with code examples",
+        "docs/COMMON_PITFALLS.md documents the manual-counter anti-pattern and the annotation-driven fix",
+        "New custom metrics require explicit allowlist registration in MetricsConfig"
+      ],
+      "testSteps": [
+        "Unit: AuthServiceTest (12 tests) — pass without reflection hack",
+        "Unit: EmailServiceTest (3 tests) — pass without reflection hack",
+        "Architecture: LayerDependencyTest.services_should_not_have_metric_fields",
+        "Architecture: LayerDependencyTest.services_should_not_use_postconstruct",
+        "Integration: AuthIntegrationTest (9 tests)",
+        "Integration: BookSearchIntegrationTest (7 tests)"
+      ],
+      "implementedFiles": [
+        "backend/src/main/java/com/library/config/MetricsConfig.java",
+        "backend/src/main/java/com/library/service/AuthServiceImpl.java",
+        "backend/src/main/java/com/library/service/EmailServiceImpl.java",
+        "backend/src/test/java/com/library/unit/service/AuthServiceTest.java",
+        "backend/src/test/java/com/library/unit/service/EmailServiceTest.java",
+        "backend/src/test/java/com/library/architecture/LayerDependencyTest.java",
+        "docs/PATTERNS.md",
+        "docs/COMMON_PITFALLS.md"
+      ]
     }
   ]
 }

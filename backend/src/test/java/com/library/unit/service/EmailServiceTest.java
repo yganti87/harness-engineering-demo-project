@@ -40,15 +40,6 @@ class EmailServiceTest {
             verificationConfig,
             new SimpleMeterRegistry()
         );
-
-        try {
-            java.lang.reflect.Method m =
-                EmailServiceImpl.class.getDeclaredMethod("initMetrics");
-            m.setAccessible(true);
-            m.invoke(emailService);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private MimeMessage createMimeMessage() {
